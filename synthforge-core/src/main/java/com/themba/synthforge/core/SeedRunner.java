@@ -47,9 +47,17 @@ public class SeedRunner {
     }
 
     public void seed(Class<?> entityClass, int count, EntityManager em) {
+        seed(entityClass, count, em, new GenerationContext());
+    }
+
+    /**
+     * Variant taking an explicit {@link GenerationContext}, which carries the
+     * configurable knobs from spec section 7 (random seed for reproducible
+     * runs, recent-date window, realistic amount range).
+     */
+    public void seed(Class<?> entityClass, int count, EntityManager em, GenerationContext context) {
         EntityType<?> entityType = em.getMetamodel().entity(entityClass);
         List<FieldMetadata> fields = scanner.scan(entityType);
-        GenerationContext context = new GenerationContext();
         Map<Class<?>, List<?>> parentsByType = new HashMap<>();
         Map<String, Iterator<Object>> oneToOneParentsByField = new HashMap<>();
 

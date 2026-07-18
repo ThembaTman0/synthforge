@@ -161,8 +161,13 @@ public class SeedGraph {
 ```java
 public class SeedRunner {
     void seed(Class<?> entityClass, int count, EntityManager em);
+    void seed(Class<?> entityClass, int count, EntityManager em,
+              GenerationContext context);
     // persists via EntityManager directly; does not require a
-    // JpaRepository for the entity being seeded
+    // JpaRepository for the entity being seeded. The GenerationContext
+    // overload carries the configurable knobs from section 7 (random
+    // seed, recent-date window, amount range); the short form uses
+    // defaults
 }
 ```
 

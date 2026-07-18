@@ -1,5 +1,6 @@
 package com.themba.synthforge.demo;
 
+import com.themba.synthforge.core.GenerationContext;
 import com.themba.synthforge.core.SeedRunner;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -7,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,6 +72,25 @@ class SeedRunnerIntegrationTest {
 
         assertEquals(100, count("Counterparty"));
         assertEquals(400, count("Payment"));
+    }
+
+    @Test
+    void explicitGenerationContextControlsAmountRangeAndDateWindow() {
+        GenerationContext context = new GenerationContext(
+                42L, 0, new BigDecimal("5.00"), new BigDecimal("5.00"));
+        runner.seed(Counterparty.class, 5, em, context);
+        runner.seed(Payment.class, 20, em, context);
+        em.flush();
+
+        List<Payment> payments =
+                em.createQuery("select p from Payment p", Payment.class).getResultList();
+        assertEquals(20, payments.size());
+        for (Payment payment : payments) {
+            assertEquals(new BigDecimal("5.00"), payment.getAmount(),
+                    "amount must come from the configured range");
+            assertEquals(LocalDate.now(), payment.getValueDate(),
+                    "a zero-day window must pin valueDate to today");
+        }
     }
 
     @Test
