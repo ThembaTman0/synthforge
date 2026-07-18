@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Spring Boot / Datafaker patch and minor bumps arrive as PRs that CI
+  # validates, instead of the "check for a newer release" pom comments.
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
