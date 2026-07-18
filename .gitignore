@@ -4,6 +4,3 @@ target/
 *.iml
 .vscode/
 .DS_Store
-
-
-synthforge-v1-spec.md
