@@ -7,21 +7,27 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Version;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import jakarta.persistence.metamodel.EntityType;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Persists generated entities via {@link EntityManager} directly; does not
  * require a JpaRepository for the entity being seeded. Owning-side
- * {@code @ManyToOne} / {@code @OneToOne} fields are wired to a randomly
- * chosen, already-persisted parent row, so parents must be seeded before
- * children (callers order manually in M1; SeedGraph automates this in M2).
+ * {@code @ManyToOne} fields are wired to a randomly chosen, already-persisted
+ * parent row; owning-side {@code @OneToOne} fields receive a distinct parent
+ * each, because the join column is unique. Parents must be seeded before
+ * children (SeedGraph orders this automatically at startup).
  * Inverse and plural associations are skipped per spec section 8.
  *
  * <p>Runs inside the caller's transaction; this class does not manage
@@ -45,6 +51,7 @@ public class SeedRunner {
         List<FieldMetadata> fields = scanner.scan(entityType);
         GenerationContext context = new GenerationContext();
         Map<Class<?>, List<?>> parentsByType = new HashMap<>();
+        Map<String, Iterator<Object>> oneToOneParentsByField = new HashMap<>();
 
         for (int i = 0; i < count; i++) {
             Object entity = instantiate(entityClass);
@@ -52,7 +59,12 @@ public class SeedRunner {
                 if (hasAnnotation(field, GeneratedValue.class) || hasAnnotation(field, Version.class)) {
                     continue;
                 }
-                if (isOwningToOne(field)) {
+                if (isOwningOneToOne(field)) {
+                    setField(entity, field,
+                            nextUnreferencedParent(field, entityClass, em, oneToOneParentsByField, context));
+                    continue;
+                }
+                if (isManyToOne(field)) {
                     setField(entity, field, pickParent(field, em, parentsByType, context));
                     continue;
                 }
@@ -68,17 +80,56 @@ public class SeedRunner {
         }
     }
 
-    /** Owning-side @ManyToOne, or @OneToOne without mappedBy. */
-    private boolean isOwningToOne(FieldMetadata field) {
+    private boolean isManyToOne(FieldMetadata field) {
         for (Annotation annotation : field.getAnnotations()) {
             if (annotation instanceof ManyToOne) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    /** Owning-side @OneToOne (no mappedBy); the join column is unique. */
+    private boolean isOwningOneToOne(FieldMetadata field) {
+        for (Annotation annotation : field.getAnnotations()) {
             if (annotation instanceof OneToOne oneToOne && oneToOne.mappedBy().isEmpty()) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * A @OneToOne parent can back at most one child row, so parents are
+     * handed out at most once each: parents not already referenced by an
+     * existing child row are shuffled up front and consumed one per child.
+     */
+    private Object nextUnreferencedParent(FieldMetadata field, Class<?> childClass, EntityManager em,
+                                          Map<String, Iterator<Object>> oneToOneParentsByField,
+                                          GenerationContext context) {
+        Iterator<Object> available = oneToOneParentsByField.computeIfAbsent(field.getFieldName(), name -> {
+            List<Object> parents = new ArrayList<>(loadAll(field.getFieldType(), em));
+            parents.removeAll(referencedParents(childClass, field, em));
+            Collections.shuffle(parents, context.random());
+            return parents.iterator();
+        });
+        if (!available.hasNext()) {
+            throw new IllegalStateException("Cannot seed @OneToOne field '" + field.getFieldName()
+                    + "' on " + childClass.getSimpleName() + ": each child needs its own "
+                    + field.getFieldType().getSimpleName()
+                    + " row and no unreferenced ones remain. Seed at least as many parents as children.");
+        }
+        return available.next();
+    }
+
+    /** Parents already taken by a persisted child row of this @OneToOne field. */
+    private List<Object> referencedParents(Class<?> childClass, FieldMetadata field, EntityManager em) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Object> query = cb.createQuery(Object.class);
+        Root<?> root = query.from(childClass);
+        query.select(root.get(field.getFieldName()))
+                .where(cb.isNotNull(root.get(field.getFieldName())));
+        return em.createQuery(query).getResultList();
     }
 
     private boolean isAssociation(FieldMetadata field) {
@@ -98,7 +149,7 @@ public class SeedRunner {
             throw new IllegalStateException("Cannot seed field '" + field.getFieldName()
                     + "': no persisted " + field.getFieldType().getSimpleName()
                     + " rows exist to reference. Seed the parent entity first"
-                    + " (automatic ordering arrives with SeedGraph in M2).");
+                    + " (SeedGraph orders this automatically at startup).");
         }
         return parents.get(context.random().nextInt(parents.size()));
     }

@@ -198,7 +198,10 @@ that is explicitly out of scope for V1.
 
 - `@ManyToOne` and `@OneToOne` (owning side only): supported. The scanner
   detects the target entity type, and `SeedGraph` guarantees the target is
-  seeded first so a valid managed reference can be attached.
+  seeded first so a valid managed reference can be attached. Because a
+  one-to-one join column is unique, each seeded child receives a distinct,
+  not-yet-referenced parent; the parent's seed count must therefore be at
+  least the child's, and running out of unreferenced parents is an error.
 - `@OneToMany`, `@ManyToMany`, and inverse `@OneToOne`: not handled in V1.
   If an entity has one of these, the field is simply skipped (left null or
   empty collection), not generated.
