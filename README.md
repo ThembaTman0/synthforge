@@ -119,6 +119,21 @@ before adding the `remitflow/` module:
 
 If any of these is false, M3 stays closed.
 
+### Feedback-driven backlog (parked, not planned)
+
+Items live here only when real consumer usage surfaced them; nothing is
+built until the need recurs or hurts:
+
+- Entity-aware or overridable `name` generation — the `name` heuristic
+  gives person first names, so a `Project.name` comes out as "Sheba"
+  (surfaced 2026-07-18 by the first external consumer).
+- `synthforge.locale` property — Datafaker supports 70+ locales;
+  generation is currently pinned to English.
+- Cross-field coherence — e.g. an `email` derived from the generated
+  `name` in the same row.
+- `@Embedded` value-object support.
+- Batch flush/clear in `SeedRunner` for very large `@Seed` counts.
+
 ## Build
 
     mvn clean install
