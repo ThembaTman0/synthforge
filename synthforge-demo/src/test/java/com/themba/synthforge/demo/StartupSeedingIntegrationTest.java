@@ -3,6 +3,8 @@ package com.themba.synthforge.demo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,17 @@ class StartupSeedingIntegrationTest {
 
     @PersistenceContext
     private EntityManager em;
+
+    @Autowired
+    private ApplicationRunner synthforgeSeedApplicationRunner;
+
+    @Test
+    void reRunningTheSeedRunnerSkipsAlreadySeededEntities() throws Exception {
+        synthforgeSeedApplicationRunner.run(null);
+
+        assertEquals(50, count("Counterparty"), "second run must skip, not double");
+        assertEquals(200, count("Payment"), "second run must skip, not double");
+    }
 
     @Test
     void startupSeedsAnnotatedCountsInDependencyOrder() {

@@ -4,6 +4,7 @@ import com.themba.synthforge.core.SeedGraph;
 import com.themba.synthforge.core.SeedRunner;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.criteria.CriteriaQuery;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -22,7 +23,9 @@ import java.util.List;
  * when one of the profiles listed under {@code synthforge.enabled-profiles}
  * is active, all {@code @Seed}-annotated entities are seeded in
  * {@link SeedGraph} topological order (parents before children) inside a
- * single transaction. When the property is absent or no listed profile is
+ * single transaction. Entities whose table already contains rows are
+ * skipped, so restarting against a persistent database does not
+ * accumulate duplicates. When the property is absent or no listed profile is
  * active, or the application has no JPA {@link EntityManagerFactory},
  * startup is untouched.
  *
@@ -55,6 +58,12 @@ public class SynthforgeAutoConfiguration {
         };
     }
 
+    private long countRows(Class<?> entityClass, EntityManager em) {
+        CriteriaQuery<Long> query = em.getCriteriaBuilder().createQuery(Long.class);
+        query.select(em.getCriteriaBuilder().count(query.from(entityClass)));
+        return em.createQuery(query).getSingleResult();
+    }
+
     private void seedAll(EntityManagerFactory entityManagerFactory) {
         List<Class<?>> order = new SeedGraph().topologicalOrder(entityManagerFactory.getMetamodel());
         SeedRunner seedRunner = new SeedRunner();
@@ -64,6 +73,12 @@ public class SynthforgeAutoConfiguration {
             for (Class<?> entityClass : order) {
                 Seed seed = entityClass.getAnnotation(Seed.class);
                 if (seed == null) {
+                    continue;
+                }
+                long existing = countRows(entityClass, em);
+                if (existing > 0) {
+                    logger.info("Skipping " + entityClass.getSimpleName() + ": " + existing
+                            + " rows already exist");
                     continue;
                 }
                 seedRunner.seed(entityClass, seed.count(), em);

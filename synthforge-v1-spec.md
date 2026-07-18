@@ -266,7 +266,9 @@ synthforge:
 On startup in an enabled profile, the autoconfiguration finds all `@Seed`
 entities, resolves them via `SeedGraph.topologicalOrder`, and runs
 `SeedRunner.seed` for each in order. `Counterparty` rows exist before any
-`Payment` row references one.
+`Payment` row references one. An entity whose table already contains rows
+is skipped (and the skip is logged), so restarting against a persistent
+database does not accumulate duplicate seed data.
 
 ## 10. Testing Strategy
 

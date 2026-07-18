@@ -27,6 +27,13 @@ M1 and M2 implemented.
   by a startup integration test in `synthforge-demo` and by running the
   demo app with the `dev` profile.
 
+Post-M2 hardening (July 2026): owning `@OneToOne` children each receive a
+distinct parent (the join column is unique), the `GenerationContext`
+knobs (random seed, date window, amount range) are reachable via a
+`SeedRunner.seed` overload, and startup seeding skips entities whose
+table already has rows, making restarts against a persistent database
+idempotent.
+
 M3/M4 gates not met; do not start that work (see spec section 11).
 
 ### M3 gate criteria (measurable)
