@@ -7,7 +7,15 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +52,15 @@ class GeneratorRegistryTest {
         private LocalDate valueDate;
         private Status status;
         private UUID token;
+        private Instant createdAt;
+        private OffsetDateTime settledAt;
+        private ZonedDateTime bookedAt;
+        private LocalTime cutoffTime;
+        private Year fiscalYear;
+        private YearMonth statementMonth;
+        private BigInteger reference;
+        private char category;
+        private byte[] attachment;
         @Size(min = 5, max = 8)
         private String mystery;                  // no heuristic match: fallback bounded by @Size
         @Column(unique = true)
@@ -132,6 +149,54 @@ class GeneratorRegistryTest {
     @Test
     void uuidTypeDefaultProducesUuid() throws Exception {
         assertInstanceOf(UUID.class, registry.resolve(metadata("token"), context));
+    }
+
+    @Test
+    void instantTypeDefaultIsRecentWithinWindow() throws Exception {
+        Instant value = (Instant) registry.resolve(metadata("createdAt"), context);
+        Instant now = Instant.now();
+        assertFalse(value.isAfter(now));
+        assertFalse(value.isBefore(now.minus(context.dateWindowDays() + 1L, ChronoUnit.DAYS)));
+    }
+
+    @Test
+    void offsetAndZonedDateTimeTypeDefaultsAreRecent() throws Exception {
+        OffsetDateTime offset = (OffsetDateTime) registry.resolve(metadata("settledAt"), context);
+        assertFalse(offset.isAfter(OffsetDateTime.now()));
+        ZonedDateTime zoned = (ZonedDateTime) registry.resolve(metadata("bookedAt"), context);
+        assertFalse(zoned.isAfter(ZonedDateTime.now()));
+    }
+
+    @Test
+    void localTimeTypeDefaultProducesATimeOfDay() throws Exception {
+        assertInstanceOf(LocalTime.class, registry.resolve(metadata("cutoffTime"), context));
+    }
+
+    @Test
+    void yearAndYearMonthTypeDefaultsComeFromTheRecentWindow() throws Exception {
+        Year year = (Year) registry.resolve(metadata("fiscalYear"), context);
+        assertFalse(year.isAfter(Year.now()));
+        YearMonth month = (YearMonth) registry.resolve(metadata("statementMonth"), context);
+        assertFalse(month.isAfter(YearMonth.now()));
+    }
+
+    @Test
+    void bigIntegerTypeDefaultIsSmallAndPositive() throws Exception {
+        BigInteger value = (BigInteger) registry.resolve(metadata("reference"), context);
+        assertTrue(value.signum() > 0, "expected a positive BigInteger, got: " + value);
+    }
+
+    @Test
+    void charTypeDefaultIsAlphanumeric() throws Exception {
+        char value = (char) registry.resolve(metadata("category"), context);
+        assertTrue(Character.isLetterOrDigit(value), "expected alphanumeric char, got: " + value);
+    }
+
+    @Test
+    void byteArrayTypeDefaultIsNonEmpty() throws Exception {
+        byte[] value = (byte[]) registry.resolve(metadata("attachment"), context);
+        assertNotNull(value);
+        assertTrue(value.length > 0);
     }
 
     @Test

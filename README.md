@@ -94,7 +94,11 @@ properties (`seed`, `date-window-days`, `amount-min`, `amount-max`),
 and startup seeding skips entities whose table already has rows, making
 restarts against a persistent database idempotent. A fixed
 `synthforge.seed` makes startup data reproducible; otherwise the chosen
-seed is logged.
+seed is logged. Type defaults cover String, all numeric types
+(including `BigInteger`), `BigDecimal`, `boolean`, `char`, enums,
+`UUID`, `byte[]`, and the `java.time` family (`LocalDate`,
+`LocalDateTime`, `Instant`, `OffsetDateTime`, `ZonedDateTime`,
+`LocalTime`, `Year`, `YearMonth`).
 
 M3/M4 gates not met; do not start that work (see spec section 11).
 

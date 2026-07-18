@@ -27,8 +27,10 @@ the other way around, see section 5.
 
 In scope:
 - Scanning JPA entities via the JPA Metamodel API (not raw reflection)
-- Generating primitive and common value-object fields (String, numeric types,
-  LocalDate/LocalDateTime, enum, BigDecimal, boolean, UUID)
+- Generating primitive and common value-object fields (String, numeric types
+  including BigInteger, char, the java.time types LocalDate, LocalDateTime,
+  Instant, OffsetDateTime, ZonedDateTime, LocalTime, Year and YearMonth,
+  enum, BigDecimal, boolean, UUID, byte[])
 - Respecting `@NotNull`, `@Size`, `@Email`, `@Column(unique = true, nullable = false)`
   when generating values
 - Resolving `@ManyToOne` and `@OneToOne` (owning side) relationships so seeded
@@ -189,8 +191,15 @@ Resolution priority, highest first:
    - `amount`, `balance` -> BigDecimal within a configurable realistic range
 3. Type default
    - `LocalDate` -> recent date within a configurable window
+   - `LocalDateTime`, `Instant`, `OffsetDateTime`, `ZonedDateTime` ->
+     recent moment within the same configurable window
+   - `LocalTime` -> random time of day
+   - `Year`, `YearMonth` -> year/month of a recent date within the window
    - `enum` types -> random value from the enum's constants
    - `BigDecimal` -> small positive value, two decimal places
+   - `BigInteger` -> small positive integer
+   - `char` -> random alphanumeric character
+   - `byte[]` -> small random byte array
    - `String` with no other match -> random alphanumeric string
 4. Fallback: random alphanumeric string bounded by `@Size` if present,
    otherwise a fixed default length.

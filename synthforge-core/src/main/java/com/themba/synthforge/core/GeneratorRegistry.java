@@ -6,8 +6,16 @@ import jakarta.validation.constraints.Size;
 
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -118,9 +126,28 @@ public class GeneratorRegistry {
         if (type == LocalDate.class) {
             return LocalDate.now().minusDays(random.nextInt(context.dateWindowDays() + 1));
         }
+        long windowMinutes = (long) context.dateWindowDays() * 24 * 60;
         if (type == LocalDateTime.class) {
-            return LocalDateTime.now().minusMinutes(
-                    random.nextLong((long) context.dateWindowDays() * 24 * 60 + 1));
+            return LocalDateTime.now().minusMinutes(random.nextLong(windowMinutes + 1));
+        }
+        if (type == Instant.class) {
+            return Instant.now().minus(Duration.ofMinutes(random.nextLong(windowMinutes + 1)));
+        }
+        if (type == OffsetDateTime.class) {
+            return OffsetDateTime.now().minusMinutes(random.nextLong(windowMinutes + 1));
+        }
+        if (type == ZonedDateTime.class) {
+            return ZonedDateTime.now().minusMinutes(random.nextLong(windowMinutes + 1));
+        }
+        if (type == LocalTime.class) {
+            return LocalTime.ofSecondOfDay(random.nextInt(86_400));
+        }
+        if (type == Year.class) {
+            return Year.of(LocalDate.now().minusDays(random.nextInt(context.dateWindowDays() + 1)).getYear());
+        }
+        if (type == YearMonth.class) {
+            LocalDate recent = LocalDate.now().minusDays(random.nextInt(context.dateWindowDays() + 1));
+            return YearMonth.of(recent.getYear(), recent.getMonth());
         }
         if (type.isEnum()) {
             Object[] constants = type.getEnumConstants();
@@ -129,6 +156,17 @@ public class GeneratorRegistry {
         if (type == BigDecimal.class) {
             // small positive value, two decimal places: 0.01 .. 999.99
             return BigDecimal.valueOf(random.nextLong(1, 100_000), 2);
+        }
+        if (type == BigInteger.class) {
+            return BigInteger.valueOf(random.nextLong(1, 1_000_000));
+        }
+        if (type == Character.class || type == char.class) {
+            return ALPHANUMERIC.charAt(random.nextInt(ALPHANUMERIC.length()));
+        }
+        if (type == byte[].class) {
+            byte[] bytes = new byte[16];
+            random.nextBytes(bytes);
+            return bytes;
         }
         if (type == Integer.class || type == int.class) {
             return random.nextInt(1_000_000);
