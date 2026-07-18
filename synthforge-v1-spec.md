@@ -202,6 +202,9 @@ Resolution priority, highest first:
      - `company`, `organization`, `organisation` -> company name
      - `description`, `notes`, `comment`, `summary`, `bio` -> lorem
        sentence (bounded by `@Size` like any generated string)
+     - `jobTitle` -> job title
+     - `title` -> short content title (book-style; tested after
+       `jobTitle`, which contains it)
      - `url`, `website`, `link` -> URL
      - `iban` -> IBAN
      - `bic`, `swift` -> BIC

@@ -64,6 +64,8 @@ class GeneratorRegistryTest {
         private String postalCode;
         private String website;
         private String description;
+        private String title;
+        private String jobTitle;                 // contains "title": job title must win
         private String iban;
         private String bic;
         private String accountNumber;
@@ -214,6 +216,18 @@ class GeneratorRegistryTest {
             assertNotNull(value, fieldName);
             assertFalse(value.isBlank(), fieldName);
         }
+    }
+
+    @Test
+    void titleHeuristicsProduceReadableTitles() throws Exception {
+        String title = (String) registry.resolve(metadata("title"), context);
+        assertNotNull(title);
+        assertFalse(title.isBlank());
+        assertFalse(title.matches("[A-Za-z0-9]{20}"),
+                "title must not fall through to the random-string fallback: " + title);
+        String jobTitle = (String) registry.resolve(metadata("jobTitle"), context);
+        assertNotNull(jobTitle);
+        assertFalse(jobTitle.isBlank());
     }
 
     @Test

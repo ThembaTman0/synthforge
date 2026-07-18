@@ -167,6 +167,12 @@ public class GeneratorRegistry {
                 || name.contains("summary") || name.contains("bio")) {
             return faker.lorem().sentence();
         }
+        if (name.contains("jobtitle")) {
+            return faker.job().title();
+        }
+        if (name.contains("title")) {
+            return faker.book().title();
+        }
         if (name.contains("url") || name.contains("website") || name.contains("link")) {
             return faker.internet().url();
         }
