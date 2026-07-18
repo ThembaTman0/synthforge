@@ -1,5 +1,6 @@
 package com.themba.synthforge.spring;
 
+import com.themba.synthforge.core.GenerationContext;
 import com.themba.synthforge.core.SeedGraph;
 import com.themba.synthforge.core.SeedRunner;
 import jakarta.persistence.EntityManager;
@@ -17,6 +18,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Runs SynthForge seeding on startup, per synthforge-v1-spec.md section 9:
@@ -29,8 +31,12 @@ import java.util.List;
  * active, or the application has no JPA {@link EntityManagerFactory},
  * startup is untouched.
  *
- * <p>The enabled-profiles list is bound at runtime (not via
- * {@code @ConditionalOnProperty}, which cannot match YAML list syntax).</p>
+ * <p>The whole {@code synthforge.*} namespace is bound at runtime into
+ * {@link SynthforgeProperties} (not via {@code @ConditionalOnProperty},
+ * which cannot match YAML list syntax). The generation knobs (seed,
+ * date window, amount range) flow into one shared
+ * {@link GenerationContext} for the entire run, so a fixed
+ * {@code synthforge.seed} reproduces identical data.</p>
  */
 @AutoConfiguration
 public class SynthforgeAutoConfiguration {
@@ -42,9 +48,10 @@ public class SynthforgeAutoConfiguration {
             ObjectProvider<EntityManagerFactory> entityManagerFactoryProvider,
             Environment environment) {
         return args -> {
-            List<String> enabledProfiles = Binder.get(environment)
-                    .bind("synthforge.enabled-profiles", Bindable.listOf(String.class))
-                    .orElse(List.of());
+            SynthforgeProperties properties = Binder.get(environment)
+                    .bind("synthforge", Bindable.of(SynthforgeProperties.class))
+                    .orElseGet(SynthforgeProperties::new);
+            List<String> enabledProfiles = properties.getEnabledProfiles();
             if (enabledProfiles.isEmpty()
                     || !environment.acceptsProfiles(Profiles.of(enabledProfiles.toArray(String[]::new)))) {
                 return;
@@ -54,7 +61,7 @@ public class SynthforgeAutoConfiguration {
                 logger.warn("synthforge.enabled-profiles is set but no EntityManagerFactory exists; skipping seeding");
                 return;
             }
-            seedAll(entityManagerFactory);
+            seedAll(entityManagerFactory, properties);
         };
     }
 
@@ -64,7 +71,13 @@ public class SynthforgeAutoConfiguration {
         return em.createQuery(query).getSingleResult();
     }
 
-    private void seedAll(EntityManagerFactory entityManagerFactory) {
+    private void seedAll(EntityManagerFactory entityManagerFactory, SynthforgeProperties properties) {
+        long randomSeed = properties.getSeed() != null ? properties.getSeed() : new Random().nextLong();
+        GenerationContext context = new GenerationContext(randomSeed,
+                properties.getDateWindowDays(), properties.getAmountMin(), properties.getAmountMax());
+        logger.info("Seeding with random seed " + randomSeed
+                + " (set synthforge.seed to this value to reproduce the run)");
+
         List<Class<?>> order = new SeedGraph().topologicalOrder(entityManagerFactory.getMetamodel());
         SeedRunner seedRunner = new SeedRunner();
         EntityManager em = entityManagerFactory.createEntityManager();
@@ -81,7 +94,7 @@ public class SynthforgeAutoConfiguration {
                             + " rows already exist");
                     continue;
                 }
-                seedRunner.seed(entityClass, seed.count(), em);
+                seedRunner.seed(entityClass, seed.count(), em, context);
                 logger.info("Seeded " + seed.count() + " " + entityClass.getSimpleName() + " rows");
             }
             em.getTransaction().commit();

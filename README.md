@@ -30,9 +30,12 @@ M1 and M2 implemented.
 Post-M2 hardening (July 2026): owning `@OneToOne` children each receive a
 distinct parent (the join column is unique), the `GenerationContext`
 knobs (random seed, date window, amount range) are reachable via a
-`SeedRunner.seed` overload, and startup seeding skips entities whose
-table already has rows, making restarts against a persistent database
-idempotent.
+`SeedRunner.seed` overload and via the `synthforge.*` application
+properties (`seed`, `date-window-days`, `amount-min`, `amount-max`),
+and startup seeding skips entities whose table already has rows, making
+restarts against a persistent database idempotent. A fixed
+`synthforge.seed` makes startup data reproducible; otherwise the chosen
+seed is logged.
 
 M3/M4 gates not met; do not start that work (see spec section 11).
 

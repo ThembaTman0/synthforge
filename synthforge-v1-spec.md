@@ -261,7 +261,19 @@ public class Payment {
 ```yaml
 synthforge:
   enabled-profiles: [dev, test]
+  # optional generation knobs (defaults shown, all may be omitted):
+  seed: 42                # fixed for reproducible data; omit for random
+  date-window-days: 365
+  amount-min: 1.00
+  amount-max: 10000.00
 ```
+
+The `synthforge.*` namespace is bound at runtime (with `Binder`, matching
+how `enabled-profiles` has always been read) into a `SynthforgeProperties`
+class in `synthforge-spring`, and the generation knobs flow into the
+`GenerationContext` used for the whole startup run. A fixed `seed` makes
+startup data reproducible across restarts; when omitted, a random seed is
+chosen and logged so any run can be reproduced after the fact.
 
 On startup in an enabled profile, the autoconfiguration finds all `@Seed`
 entities, resolves them via `SeedGraph.topologicalOrder`, and runs
