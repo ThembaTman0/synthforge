@@ -182,13 +182,45 @@ Resolution priority, highest first:
    - `@Column(unique = true)` -> unique-guaranteed variant of whatever the
      next rule would have chosen
    - `@Size(max = n)` -> truncate/generate within that bound
-2. Field name heuristic (case-insensitive substring match)
-   - `firstName`, `name` -> person given name
-   - `surname`, `lastName` -> person family name
-   - `email` -> email address
-   - `phone` -> phone number
-   - `currency` -> ISO 4217 currency code
-   - `amount`, `balance` -> BigDecimal within a configurable realistic range
+2. Field name heuristic (case-insensitive substring match, most-specific
+   pattern first: a pattern containing another pattern as a substring —
+   `username` vs `name`, `countryCode` vs `country`, `emailAddress` /
+   `ipAddress` vs `address` — is always tested before it)
+   - String fields:
+     - `username`, `login` -> internet username
+     - `fullName` -> person full name
+     - `surname`, `lastName` -> person family name
+     - `email` -> email address
+     - `phone` -> phone number
+     - `ipAddress` -> IPv4 address
+     - `street`, `address` -> street address
+     - `city` -> city name
+     - `countryCode` -> ISO country code
+     - `country` -> country name
+     - `zipCode`, `postalCode`, `postcode` -> postal code
+     - `currency` -> ISO 4217 currency code
+     - `company`, `organization`, `organisation` -> company name
+     - `description`, `notes`, `comment`, `summary`, `bio` -> lorem
+       sentence (bounded by `@Size` like any generated string)
+     - `url`, `website`, `link` -> URL
+     - `iban` -> IBAN
+     - `bic`, `swift` -> BIC
+     - `accountNumber` -> digit string
+     - `reference`, `invoiceNumber`, `orderNumber` -> uppercase
+       alphanumeric code
+     - `firstName`, `name` -> person given name (the generic `name`
+       match is always tested last)
+   - BigDecimal fields:
+     - `percent`, `rate` -> 0.00 .. 100.00, two decimal places
+     - `amount`, `balance`, `price`, `cost`, `fee`, `total` -> within a
+       configurable realistic range
+   - Integer/Long fields:
+     - `quantity`, `stock`, `qty` -> small positive count
+     - `percent` -> 0 .. 100
+   - LocalDate fields:
+     - `birth`, `dob` -> date of birth 18 to 80 years in the past
+   - Double fields:
+     - `latitude` -> -90 .. 90, `longitude` -> -180 .. 180
 3. Type default
    - `LocalDate` -> recent date within a configurable window
    - `LocalDateTime`, `Instant`, `OffsetDateTime`, `ZonedDateTime` ->

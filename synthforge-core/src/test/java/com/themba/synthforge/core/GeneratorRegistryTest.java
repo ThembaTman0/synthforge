@@ -52,6 +52,29 @@ class GeneratorRegistryTest {
         private LocalDate valueDate;
         private Status status;
         private UUID token;
+        private String username;                 // contains "name": must NOT become a first name
+        private String fullName;                 // contains "name": must become a full name
+        private String companyName;              // contains "name": must become a company name
+        private String emailAddress;             // contains "address": email must win
+        private String ipAddress;                // contains "address": IPv4 must win
+        private String shippingAddress;
+        private String city;
+        private String country;
+        private String countryCode;              // contains "country": code must win
+        private String postalCode;
+        private String website;
+        private String description;
+        private String iban;
+        private String bic;
+        private String accountNumber;
+        private String invoiceNumber;
+        private LocalDate birthDate;             // must NOT come from the recent-date window
+        private BigDecimal price;
+        private BigDecimal vatRate;
+        private Integer quantity;
+        private Long stockLevel;
+        private Double latitude;
+        private Double longitude;
         private Instant createdAt;
         private OffsetDateTime settledAt;
         private ZonedDateTime bookedAt;
@@ -149,6 +172,109 @@ class GeneratorRegistryTest {
     @Test
     void uuidTypeDefaultProducesUuid() throws Exception {
         assertInstanceOf(UUID.class, registry.resolve(metadata("token"), context));
+    }
+
+    @Test
+    void usernameBeatsTheGenericNameHeuristic() throws Exception {
+        String value = (String) registry.resolve(metadata("username"), context);
+        assertEquals(value.toLowerCase(), value, "expected a lowercase username, got: " + value);
+        assertTrue(value.contains("."), "expected first.last style username, got: " + value);
+    }
+
+    @Test
+    void fullNameHeuristicProducesFirstAndLastName() throws Exception {
+        String value = (String) registry.resolve(metadata("fullName"), context);
+        assertTrue(value.contains(" "), "expected a full name with a space, got: " + value);
+    }
+
+    @Test
+    void emailAddressFieldGetsAnEmailNotAStreetAddress() throws Exception {
+        String value = (String) registry.resolve(metadata("emailAddress"), context);
+        assertTrue(value.contains("@"), "email must beat the address heuristic, got: " + value);
+    }
+
+    @Test
+    void ipAddressFieldGetsAnIpv4NotAStreetAddress() throws Exception {
+        String value = (String) registry.resolve(metadata("ipAddress"), context);
+        assertTrue(value.matches("\\d{1,3}(\\.\\d{1,3}){3}"),
+                "IPv4 must beat the address heuristic, got: " + value);
+    }
+
+    @Test
+    void countryCodeBeatsTheCountryHeuristic() throws Exception {
+        String value = (String) registry.resolve(metadata("countryCode"), context);
+        assertTrue(value.matches("[A-Z]{2}"), "expected ISO country code, got: " + value);
+    }
+
+    @Test
+    void addressFamilyHeuristicsProduceValues() throws Exception {
+        for (String fieldName : List.of("shippingAddress", "city", "country", "postalCode",
+                "companyName", "website", "description")) {
+            String value = (String) registry.resolve(metadata(fieldName), context);
+            assertNotNull(value, fieldName);
+            assertFalse(value.isBlank(), fieldName);
+        }
+    }
+
+    @Test
+    void financeHeuristicsProduceWellFormedValues() throws Exception {
+        String iban = (String) registry.resolve(metadata("iban"), context);
+        assertTrue(iban.matches("[A-Z]{2}\\d{2}[A-Za-z0-9]+"), "expected IBAN, got: " + iban);
+        String bic = (String) registry.resolve(metadata("bic"), context);
+        assertTrue(bic.matches("[A-Z0-9]{8}([A-Z0-9]{3})?"), "expected BIC, got: " + bic);
+        String account = (String) registry.resolve(metadata("accountNumber"), context);
+        assertTrue(account.matches("\\d{10}"), "expected digit string, got: " + account);
+        String invoice = (String) registry.resolve(metadata("invoiceNumber"), context);
+        assertTrue(invoice.matches("[A-Z0-9]{10}"), "expected uppercase code, got: " + invoice);
+    }
+
+    @Test
+    void birthDateHeuristicProducesAnAdultDateNotARecentOne() throws Exception {
+        for (int i = 0; i < 20; i++) {
+            LocalDate value = (LocalDate) registry.resolve(metadata("birthDate"), context);
+            assertFalse(value.isAfter(LocalDate.now().minusYears(18)),
+                    "birth date younger than 18: " + value);
+            assertFalse(value.isBefore(LocalDate.now().minusYears(81)),
+                    "birth date older than 81: " + value);
+        }
+    }
+
+    @Test
+    void priceJoinsTheConfigurableAmountFamily() throws Exception {
+        BigDecimal value = (BigDecimal) registry.resolve(metadata("price"), context);
+        assertEquals(2, value.scale());
+        assertTrue(value.compareTo(context.amountMin()) >= 0);
+        assertTrue(value.compareTo(context.amountMax()) <= 0);
+    }
+
+    @Test
+    void rateHeuristicStaysWithinZeroToHundred() throws Exception {
+        for (int i = 0; i < 20; i++) {
+            BigDecimal value = (BigDecimal) registry.resolve(metadata("vatRate"), context);
+            assertEquals(2, value.scale());
+            assertTrue(value.signum() >= 0 && value.compareTo(BigDecimal.valueOf(100)) <= 0,
+                    "expected 0..100, got: " + value);
+        }
+    }
+
+    @Test
+    void quantityAndStockHeuristicsProduceSmallPositiveCounts() throws Exception {
+        for (int i = 0; i < 20; i++) {
+            int quantity = (int) registry.resolve(metadata("quantity"), context);
+            assertTrue(quantity >= 1 && quantity < 100, "expected 1..99, got: " + quantity);
+            long stock = (long) registry.resolve(metadata("stockLevel"), context);
+            assertTrue(stock >= 1 && stock < 100, "expected 1..99, got: " + stock);
+        }
+    }
+
+    @Test
+    void coordinateHeuristicsProduceValidRanges() throws Exception {
+        for (int i = 0; i < 20; i++) {
+            double latitude = (double) registry.resolve(metadata("latitude"), context);
+            assertTrue(latitude >= -90 && latitude <= 90, "invalid latitude: " + latitude);
+            double longitude = (double) registry.resolve(metadata("longitude"), context);
+            assertTrue(longitude >= -180 && longitude <= 180, "invalid longitude: " + longitude);
+        }
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.themba.synthforge.core;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import net.datafaker.Faker;
 
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
@@ -93,27 +94,124 @@ public class GeneratorRegistry {
         String name = field.getFieldName().toLowerCase(Locale.ROOT);
         Class<?> type = field.getFieldType();
         if (type == String.class) {
-            if (name.contains("surname") || name.contains("lastname")) {
-                return context.faker().name().lastName();
+            return stringHeuristic(name, context);
+        }
+        if (type == BigDecimal.class) {
+            return bigDecimalHeuristic(name, context);
+        }
+        if (type == Integer.class || type == int.class || type == Long.class || type == long.class) {
+            return wholeNumberHeuristic(name, type, context);
+        }
+        if (type == LocalDate.class && (name.contains("birth") || name.contains("dob"))) {
+            Random random = context.random();
+            return LocalDate.now().minusYears(18 + random.nextInt(63)).minusDays(random.nextInt(365));
+        }
+        if (type == Double.class || type == double.class) {
+            if (name.contains("latitude")) {
+                return -90 + context.random().nextDouble() * 180;
             }
-            if (name.contains("email")) {
-                return context.faker().internet().emailAddress();
-            }
-            if (name.contains("phone")) {
-                return context.faker().phoneNumber().phoneNumber();
-            }
-            if (name.contains("currency")) {
-                return context.faker().money().currencyCode();
-            }
-            // "firstname" also contains "name", so a single check covers both
-            if (name.contains("name")) {
-                return context.faker().name().firstName();
+            if (name.contains("longitude")) {
+                return -180 + context.random().nextDouble() * 360;
             }
         }
-        if (type == BigDecimal.class && (name.contains("amount") || name.contains("balance"))) {
+        return null;
+    }
+
+    /**
+     * Ordered most-specific first: a pattern containing another pattern as
+     * a substring (username vs name, countryCode vs country, emailAddress
+     * and ipAddress vs address) must be tested before it.
+     */
+    private Object stringHeuristic(String name, GenerationContext context) {
+        Faker faker = context.faker();
+        if (name.contains("username") || name.contains("login")) {
+            return faker.internet().username();
+        }
+        if (name.contains("fullname")) {
+            return faker.name().fullName();
+        }
+        if (name.contains("surname") || name.contains("lastname")) {
+            return faker.name().lastName();
+        }
+        if (name.contains("email")) {
+            return faker.internet().emailAddress();
+        }
+        if (name.contains("phone")) {
+            return faker.phoneNumber().phoneNumber();
+        }
+        if (name.contains("ipaddress")) {
+            return faker.internet().ipV4Address();
+        }
+        if (name.contains("street") || name.contains("address")) {
+            return faker.address().streetAddress();
+        }
+        if (name.contains("city")) {
+            return faker.address().city();
+        }
+        if (name.contains("countrycode")) {
+            return faker.address().countryCode();
+        }
+        if (name.contains("country")) {
+            return faker.address().country();
+        }
+        if (name.contains("zipcode") || name.contains("postalcode") || name.contains("postcode")) {
+            return faker.address().zipCode();
+        }
+        if (name.contains("currency")) {
+            return faker.money().currencyCode();
+        }
+        if (name.contains("company") || name.contains("organization") || name.contains("organisation")) {
+            return faker.company().name();
+        }
+        if (name.contains("description") || name.contains("notes") || name.contains("comment")
+                || name.contains("summary") || name.contains("bio")) {
+            return faker.lorem().sentence();
+        }
+        if (name.contains("url") || name.contains("website") || name.contains("link")) {
+            return faker.internet().url();
+        }
+        if (name.contains("iban")) {
+            return faker.finance().iban();
+        }
+        if (name.contains("bic") || name.contains("swift")) {
+            return faker.finance().bic();
+        }
+        if (name.contains("accountnumber")) {
+            return faker.number().digits(10);
+        }
+        if (name.contains("reference") || name.contains("invoicenumber") || name.contains("ordernumber")) {
+            return faker.regexify("[A-Z0-9]{10}");
+        }
+        // generic "name" last: username, fullname, companyname etc. all
+        // contain it and must have been tested first
+        if (name.contains("name")) {
+            return faker.name().firstName();
+        }
+        return null;
+    }
+
+    private Object bigDecimalHeuristic(String name, GenerationContext context) {
+        if (name.contains("percent") || name.contains("rate")) {
+            return BigDecimal.valueOf(context.random().nextLong(0, 10_001), 2);
+        }
+        if (name.contains("amount") || name.contains("balance") || name.contains("price")
+                || name.contains("cost") || name.contains("fee") || name.contains("total")) {
             return randomAmount(context.amountMin(), context.amountMax(), context.random());
         }
         return null;
+    }
+
+    private Object wholeNumberHeuristic(String name, Class<?> type, GenerationContext context) {
+        Integer value = null;
+        if (name.contains("quantity") || name.contains("stock") || name.contains("qty")) {
+            value = context.random().nextInt(1, 100);
+        } else if (name.contains("percent")) {
+            value = context.random().nextInt(0, 101);
+        }
+        if (value == null) {
+            return null;
+        }
+        return (type == Long.class || type == long.class) ? (Object) value.longValue() : value;
     }
 
     /** Spec section 7, rule 3: type default. */
