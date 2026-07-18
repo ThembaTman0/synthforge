@@ -29,6 +29,23 @@ M1 and M2 implemented.
 
 M3/M4 gates not met; do not start that work (see spec section 11).
 
+### M3 gate criteria (measurable)
+
+The spec (section 11) gates M3 on M1/M2 having "genuinely proven useful"
+and RemitFlow existing. Concretely, all of the following must be true
+before adding the `remitflow/` module:
+
+1. RemitFlow exists in this reactor with at least two entities related
+   through an owning-side `@ManyToOne` or `@OneToOne`.
+2. RemitFlow needs seed data in its dev or test profile that would
+   otherwise require hand-written SQL scripts or fixture builders —
+   i.e. there is a concrete first use case, not a hypothetical one.
+3. The demo module's startup seeding and integration tests have been
+   running green in CI (including repeated runs with no
+   unique-constraint violations), demonstrating M1/M2 work day-to-day.
+
+If any of these is false, M3 stays closed.
+
 ## Build
 
     mvn clean install
