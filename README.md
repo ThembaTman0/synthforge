@@ -12,6 +12,58 @@ implementation should follow.
   (`Counterparty`, `Payment`) used to validate the above against something
   real, since RemitFlow does not exist as a project yet
 
+## Getting started
+
+Requires Java 21. SynthForge is not published to a remote Maven
+repository yet (see the M4 gate in the spec), so install it locally
+first:
+
+    git clone https://github.com/ThembaTman0/synthforge.git
+    cd synthforge
+    mvn install
+
+Then, in your Spring Boot app:
+
+1. Add the dependency:
+
+   ```xml
+   <dependency>
+       <groupId>com.themba.synthforge</groupId>
+       <artifactId>synthforge-spring</artifactId>
+       <version>0.1.0-SNAPSHOT</version>
+   </dependency>
+   ```
+
+2. Annotate the JPA entities you want fake rows for:
+
+   ```java
+   @Entity
+   @Seed(count = 50)
+   public class Counterparty { ... }
+   ```
+
+3. Enable seeding for the profiles where you want it (never production),
+   plus optional generation knobs, in `application.yml`:
+
+   ```yaml
+   synthforge:
+     enabled-profiles: [dev, test]
+     # optional:
+     seed: 42               # fixed -> identical data every restart
+     date-window-days: 90
+     amount-min: 1.00
+     amount-max: 10000.00
+   ```
+
+4. Start the app in an enabled profile. On startup SynthForge seeds
+   every `@Seed` entity: parents before children (`@ManyToOne` /
+   owning `@OneToOne` references always point at persisted rows),
+   constraint-aware (`@NotNull`, `@Size`, `@Email`, unique columns),
+   with realistic values driven by field names (`email`, `name`,
+   `currency`, `amount`, ...). Tables that already contain rows are
+   skipped, so restarts don't duplicate data. `@OneToMany` /
+   `@ManyToMany` fields are left alone.
+
 ## Status
 
 M1 and M2 implemented.
