@@ -4,6 +4,13 @@ A JPA-aware fake data seeding library for Spring Boot. Standalone project,
 see `synthforge-v1-spec.md` for the full technical specification this
 implementation should follow.
 
+Positioning in one line: [Instancio](https://github.com/instancio/instancio)
+generates objects for tests; SynthForge seeds databases for running apps.
+Annotate an entity with `@Seed`, start your app in a dev profile, and the
+database is populated with realistic, relationship-consistent rows — no
+seeding code, correct parent-before-child ordering, profile-gated so it
+can never touch production, and idempotent across restarts.
+
 ## Modules
 
 - `synthforge-core`: entity scanning, generator resolution, seed graph, seed runner
