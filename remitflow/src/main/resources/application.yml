@@ -9,6 +9,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  mvc:
+    problemdetails:
+      enabled: true # RFC 9457 responses for validation and mapped exceptions, section 7
 
 synthforge:
   enabled-profiles:
