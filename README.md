@@ -4,28 +4,28 @@ A JPA-aware fake data seeding library for Spring Boot.
 
 [Instancio](https://github.com/instancio/instancio) (and its
 [instancio-jpa](https://github.com/Mobe91/instancio-jpa) extension) gives
-you an API to call from inside a test — build a graph, persist it, for
+you an API to call from inside a test - build a graph, persist it, for
 that test. SynthForge runs itself: annotate the entity, start the app in a
-dev profile, and the database is already populated — no test method, no
+dev profile, and the database is already populated - no test method, no
 calling code, anywhere.
 
 ## The problem
 
-Faker and Datafaker generate realistic-looking *values* — names, emails,
-addresses — but they have no idea your entities are related. The moment
+Faker and Datafaker generate realistic-looking *values* - names, emails,
+addresses - but they have no idea your entities are related. The moment
 one entity references another (`Payment` → `Counterparty`), you're back to
 hand-writing a seed script: create parents first, hold onto their IDs,
 wire them into children, hope you didn't violate a `@NotNull` or a unique
 constraint along the way. That script rots the first time a field changes.
-SynthForge reads your JPA entities directly — annotations, relationships,
-and all — and generates a valid, related, constraint-respecting object
+SynthForge reads your JPA entities directly - annotations, relationships,
+and all - and generates a valid, related, constraint-respecting object
 graph with a single annotation, so there's no script to write or maintain.
 
 ## Install
 
 SynthForge isn't on Maven Central yet (see the M4 gate in
 [synthforge-v1-spec.md](synthforge-v1-spec.md)), so for now it's installed
-from source into your **local** Maven repository — the same `~/.m2` cache
+from source into your **local** Maven repository - the same `~/.m2` cache
 Maven and Gradle read from for every project on your machine. One-time
 setup:
 
@@ -36,8 +36,8 @@ mvn install
 ```
 
 That builds `synthforge-core` and `synthforge-spring` and installs them
-locally. Now, **in your own Spring Boot project** — a separate project,
-not this cloned folder — add the dependency:
+locally. Now, **in your own Spring Boot project** - a separate project,
+not this cloned folder - add the dependency:
 
 **Maven**
 
@@ -95,22 +95,22 @@ right order, with realistic values, on every restart.
 
 ## How it works
 
-- **Entity scanning** — reads JPA-managed attributes through the
+- **Entity scanning** - reads JPA-managed attributes through the
   `jakarta.persistence.metamodel.Metamodel` API, never raw reflection, so
   only real persistent fields are ever touched.
-- **Relationship ordering** — builds a dependency graph from owning-side
+- **Relationship ordering** - builds a dependency graph from owning-side
   `@ManyToOne`/`@OneToOne` relationships and topologically sorts it, so
   parent rows always exist before a child is generated to reference them.
-- **Constraint-aware generation** — `@NotNull`, `@Size`, `@Email`, and
+- **Constraint-aware generation** - `@NotNull`, `@Size`, `@Email`, and
   field-name heuristics (`email`, `iban`, `amount`, `country`, ...) drive
   realistic values via [Datafaker](https://www.datafaker.net/); a
   `@Column(unique = true)` field gets a bounded retry loop instead of a
   constraint violation.
-- **Idempotent restarts** — a table that already has rows is skipped, so
+- **Idempotent restarts** - a table that already has rows is skipped, so
   restarting against a persistent database never duplicates seed data.
 
-Full technical detail — the exact resolution priority, relationship rules,
-and configuration reference — is in
+Full technical detail - the exact resolution priority, relationship rules,
+and configuration reference - is in
 [synthforge-v1-spec.md](synthforge-v1-spec.md).
 
 ## License

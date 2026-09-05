@@ -183,9 +183,9 @@ Resolution priority, highest first:
      next rule would have chosen
    - `@Size(max = n)` -> truncate/generate within that bound
 2. Field name heuristic (case-insensitive substring match, most-specific
-   pattern first: a pattern containing another pattern as a substring —
+   pattern first: a pattern containing another pattern as a substring -
    `username` vs `name`, `countryCode` vs `country`, `emailAddress` /
-   `ipAddress` vs `address` — is always tested before it)
+   `ipAddress` vs `address` - is always tested before it)
    - String fields:
      - `username`, `login` -> internet username
      - `fullName` -> person full name
@@ -364,7 +364,7 @@ website, a CLI, or an "enterprise edition" are still not part of this
 specification and should not be discussed until M4 has shipped and is in
 use somewhere beyond these two projects. Publishing is scoped to
 `synthforge-core` and `synthforge-spring` only: `remitflow` (once it
-exists) stays deploy-skipped even after M4 (decided 2026-07-18) — it is
+exists) stays deploy-skipped even after M4 (decided 2026-07-18) - it is
 a domain/curriculum module, not part of the general-purpose library's
 public surface.
 

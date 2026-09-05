@@ -22,7 +22,7 @@ each order through a simple status lifecycle.
 RemitFlow is a Spring Boot curriculum project: its first job is to teach
 real-world API design (domain modelling, validation, state transitions,
 error handling, testing). Its second job is to be the consumer that opens
-SynthForge's M3 gate — creating this module *is* the M3 act described in
+SynthForge's M3 gate - creating this module *is* the M3 act described in
 `synthforge-v1-spec.md` section 11.
 
 ## 2. Scope for V1
@@ -91,7 +91,7 @@ README and CLAUDE.md status lines in the same commit.
 
 ## 6. Domain Model
 
-Field names are chosen to be honest domain names first — that most of
+Field names are chosen to be honest domain names first - that most of
 them also hit SynthForge's field-name heuristics is the point of
 dogfooding, not an accident.
 
@@ -244,7 +244,7 @@ spring:
 - MockMvc integration tests per endpoint: happy path plus the listed
   error statuses (404/409/422) and one Bean Validation 400.
 - One startup test on the test profile asserting SynthForge seeded the
-  three `@Seed` counts with all order references valid — this doubles as
+  three `@Seed` counts with all order references valid - this doubles as
   SynthForge's first in-reactor consumer regression test.
 - Scenario tests: a real embedded server (`@SpringBootTest(webEnvironment
   = RANDOM_PORT)`) exercised over plain HTTP with `RestClient`, chaining
@@ -271,7 +271,7 @@ create/read, with validation, Problem Details errors, and MockMvc tests.
 and full unit-test coverage of transitions and arithmetic.
 
 **M4 gate** (only after M1–M3 are done and used day-to-day): revisit the
-section 12 non-goals — auth, idempotency, pagination — and promote at
+section 12 non-goals - auth, idempotency, pagination - and promote at
 most one at a time, spec amendment first.
 
 ## 12. Explicit Non-Goals (for now, not forever)
@@ -290,7 +290,7 @@ most one at a time, spec amendment first.
   not named in this document; if a gap appears, stop and describe it.
 - Package root is `com.themba.remitflow`; Java 21; versions come from
   the reactor parent pom.
-- Entities are seeded by SynthForge in dev/test — do not write manual
+- Entities are seeded by SynthForge in dev/test - do not write manual
   seed SQL or `CommandLineRunner` seeders.
 - When SynthForge's generated data looks wrong for a field here, that
   is consumer feedback: record it in SynthForge's README backlog rather
