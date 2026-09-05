@@ -29,7 +29,7 @@
 
     <!-- Spring Boot 4.1.0 was current as of July 2026. Check for a newer
          patch release before you build for real. -->
-    <spring-boot.version>4.1.0</spring-boot.version>
+    <spring-boot.version>4.1.1</spring-boot.version>
     <!-- Datafaker 2.7.0 was current as of July 2026. -->
     <datafaker.version>2.7.0</datafaker.version>
   </properties>
