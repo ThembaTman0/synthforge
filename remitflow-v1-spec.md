@@ -246,6 +246,16 @@ spring:
 - One startup test on the test profile asserting SynthForge seeded the
   three `@Seed` counts with all order references valid — this doubles as
   SynthForge's first in-reactor consumer regression test.
+- Scenario tests: a real embedded server (`@SpringBootTest(webEnvironment
+  = RANDOM_PORT)`) exercised over plain HTTP with `RestClient`, chaining
+  create -> submit -> settle/reject as an external caller would. Valid
+  input comes from SynthForge's own seeded `Counterparty`/`Corridor`
+  rows, not hand-built fixtures; deliberately-invalid cases (unknown
+  ids, an over-the-bound amount, a non-payable beneficiary, illegal
+  transitions) are still hand-built, since SynthForge's own fallback
+  rule guarantees every seeded `Counterparty` a non-null iban/bic and so
+  never produces a non-payable row to draw on. This complements, rather
+  than replaces, the MockMvc and unit-test layers above.
 
 ## 11. Milestones
 
