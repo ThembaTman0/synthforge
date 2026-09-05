@@ -24,4 +24,9 @@ public class ApiExceptionHandler {
     public ProblemDetail handleBusinessRuleViolation(BusinessRuleViolationException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     }
+
+    @ExceptionHandler(IllegalTransitionException.class)
+    public ProblemDetail handleIllegalTransition(IllegalTransitionException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
 }

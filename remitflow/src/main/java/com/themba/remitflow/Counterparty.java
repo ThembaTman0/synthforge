@@ -82,4 +82,9 @@ public class Counterparty {
     public void setCountry(String country) {
         this.country = country;
     }
+
+    /** Section 8 rule 6: a beneficiary can only be submitted-to if payable. */
+    public boolean isPayable() {
+        return iban != null && !iban.isBlank() && bic != null && !bic.isBlank();
+    }
 }

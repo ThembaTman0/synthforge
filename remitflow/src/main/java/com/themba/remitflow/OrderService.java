@@ -78,4 +78,47 @@ public class OrderService {
                 : orderRepository.findAll();
         return orders.stream().map(OrderResponse::from).toList();
     }
+
+    /** Section 8 rules 5-6: CREATED -> SUBMITTED, only if the beneficiary is payable. */
+    public OrderResponse submit(Long id) {
+        RemittanceOrder order = getOrderOrThrow(id);
+        requireStatus(order, OrderStatus.CREATED, OrderStatus.SUBMITTED);
+        if (!order.getBeneficiary().isPayable()) {
+            throw new BusinessRuleViolationException("beneficiary " + order.getBeneficiary().getId()
+                    + " is not payable: iban and bic are both required to submit");
+        }
+        order.setStatus(OrderStatus.SUBMITTED);
+        return OrderResponse.from(orderRepository.save(order));
+    }
+
+    /** Section 8 rule 5: SUBMITTED -> SETTLED. */
+    public OrderResponse settle(Long id) {
+        RemittanceOrder order = getOrderOrThrow(id);
+        requireStatus(order, OrderStatus.SUBMITTED, OrderStatus.SETTLED);
+        order.setStatus(OrderStatus.SETTLED);
+        return OrderResponse.from(orderRepository.save(order));
+    }
+
+    /** Section 8 rule 5: CREATED or SUBMITTED -> REJECTED. */
+    public OrderResponse reject(Long id) {
+        RemittanceOrder order = getOrderOrThrow(id);
+        if (order.getStatus() != OrderStatus.CREATED && order.getStatus() != OrderStatus.SUBMITTED) {
+            throw new IllegalTransitionException("cannot transition RemittanceOrder " + id
+                    + " from " + order.getStatus() + " to REJECTED");
+        }
+        order.setStatus(OrderStatus.REJECTED);
+        return OrderResponse.from(orderRepository.save(order));
+    }
+
+    private RemittanceOrder getOrderOrThrow(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("RemittanceOrder " + id + " not found"));
+    }
+
+    private void requireStatus(RemittanceOrder order, OrderStatus required, OrderStatus target) {
+        if (order.getStatus() != required) {
+            throw new IllegalTransitionException("cannot transition RemittanceOrder " + order.getId()
+                    + " from " + order.getStatus() + " to " + target);
+        }
+    }
 }

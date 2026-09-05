@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * See remitflow-v1-spec.md section 7. Create and read only for M2;
- * /submit, /settle, /reject are M3 (section 11) and not implemented here.
- */
+/** See remitflow-v1-spec.md section 7. */
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderController {
@@ -41,5 +38,20 @@ public class OrderController {
     @GetMapping
     public List<OrderResponse> findAll(@RequestParam(required = false) OrderStatus status) {
         return service.findAll(status);
+    }
+
+    @PostMapping("/{id}/submit")
+    public OrderResponse submit(@PathVariable Long id) {
+        return service.submit(id);
+    }
+
+    @PostMapping("/{id}/settle")
+    public OrderResponse settle(@PathVariable Long id) {
+        return service.settle(id);
+    }
+
+    @PostMapping("/{id}/reject")
+    public OrderResponse reject(@PathVariable Long id) {
+        return service.reject(id);
     }
 }
