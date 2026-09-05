@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.themba.synthforge</groupId>
+    <groupId>io.github.ThembaTman0</groupId>
     <artifactId>synthforge-parent</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
@@ -15,12 +15,12 @@
 
   <!-- Small Spring Boot app with two related entities (Counterparty,
        Payment) used to validate synthforge-core / synthforge-spring
-       against something real, since RemitFlow does not exist yet.
-       See synthforge-v1-spec.md section 9. -->
+       against something real. remitflow/ is the second, real-world
+       consumer alongside this one. See synthforge-v1-spec.md section 9. -->
 
   <dependencies>
     <dependency>
-      <groupId>com.themba.synthforge</groupId>
+      <groupId>io.github.ThembaTman0</groupId>
       <artifactId>synthforge-spring</artifactId>
       <version>${project.version}</version>
     </dependency>

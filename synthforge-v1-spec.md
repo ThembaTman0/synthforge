@@ -264,7 +264,7 @@ they're usable today without waiting for RemitFlow to exist.
 
 ```xml
 <dependency>
-    <groupId>com.themba</groupId>
+    <groupId>io.github.ThembaTman0</groupId>
     <artifactId>synthforge-spring-starter</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <scope>test</scope>

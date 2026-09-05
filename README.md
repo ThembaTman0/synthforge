@@ -39,7 +39,7 @@ Then, in your Spring Boot app:
 
    ```xml
    <dependency>
-       <groupId>com.themba.synthforge</groupId>
+       <groupId>io.github.ThembaTman0</groupId>
        <artifactId>synthforge-spring</artifactId>
        <version>0.1.0-SNAPSHOT</version>
    </dependency>
