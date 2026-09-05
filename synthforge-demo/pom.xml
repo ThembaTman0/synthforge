@@ -16,7 +16,14 @@
   <!-- Small Spring Boot app with two related entities (Counterparty,
        Payment) used to validate synthforge-core / synthforge-spring
        against something real. remitflow/ is the second, real-world
-       consumer alongside this one. See synthforge-v1-spec.md section 9. -->
+       consumer alongside this one. See synthforge-v1-spec.md section 9.
+       Demo module, not part of the library's public surface: never
+       published, matching remitflow's maven.deploy.skip (see the parent
+       pom's M4 note). -->
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
 
   <dependencies>
     <dependency>

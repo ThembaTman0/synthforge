@@ -13,6 +13,10 @@
   <artifactId>synthforge-core</artifactId>
   <packaging>jar</packaging>
 
+  <name>SynthForge Core</name>
+  <description>Entity scanning, generator resolution, seed graph, and seed
+    runner for SynthForge. No Spring dependency.</description>
+
   <!-- Entity scanner, generator registry, seed graph, seed runner.
        See synthforge-v1-spec.md section 6. No Spring dependency here on
        purpose, this module should be usable outside Spring too. -->

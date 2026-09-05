@@ -13,6 +13,10 @@
   <artifactId>synthforge-spring</artifactId>
   <packaging>jar</packaging>
 
+  <name>SynthForge Spring Boot Starter</name>
+  <description>Spring Boot autoconfiguration and the @Seed annotation for
+    SynthForge.</description>
+
   <!-- @Seed annotation + Spring Boot autoconfiguration.
        See synthforge-v1-spec.md sections 6 and 9. -->
 
