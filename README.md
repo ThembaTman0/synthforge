@@ -1,148 +1,118 @@
 # SynthForge
 
-A JPA-aware fake data seeding library for Spring Boot. Standalone project,
-see `synthforge-v1-spec.md` for the full technical specification this
-implementation should follow.
+A JPA-aware fake data seeding library for Spring Boot.
 
-Positioning in one line: [Instancio](https://github.com/instancio/instancio)
-generates objects for tests; SynthForge seeds databases for running apps.
-Annotate an entity with `@Seed`, start your app in a dev profile, and the
-database is populated with realistic, relationship-consistent rows — no
-seeding code, correct parent-before-child ordering, profile-gated so it
-can never touch production, and idempotent across restarts.
+[Instancio](https://github.com/instancio/instancio) (and its
+[instancio-jpa](https://github.com/Mobe91/instancio-jpa) extension) gives
+you an API to call from inside a test — build a graph, persist it, for
+that test. SynthForge runs itself: annotate the entity, start the app in a
+dev profile, and the database is already populated — no test method, no
+calling code, anywhere.
 
-## Modules
+## The problem
 
-- `synthforge-core`: entity scanning, generator resolution, seed graph, seed runner
-- `synthforge-spring`: Spring Boot autoconfiguration and the `@Seed` annotation
-- `synthforge-demo`: a small Spring Boot app with two related entities
-  (`Counterparty`, `Payment`) used to validate the above against something
-  real
-- `remitflow`: the real second consumer — a B2B cross-border remittance
-  gateway with its own binding spec in `remitflow-v1-spec.md` and its own
-  complete M1-M3 (entities/seeding, REST API, order lifecycle). Deploy-skipped;
-  not part of the published library artifact (see the M4 gate below)
+Faker and Datafaker generate realistic-looking *values* — names, emails,
+addresses — but they have no idea your entities are related. The moment
+one entity references another (`Payment` → `Counterparty`), you're back to
+hand-writing a seed script: create parents first, hold onto their IDs,
+wire them into children, hope you didn't violate a `@NotNull` or a unique
+constraint along the way. That script rots the first time a field changes.
+SynthForge reads your JPA entities directly — annotations, relationships,
+and all — and generates a valid, related, constraint-respecting object
+graph with a single annotation, so there's no script to write or maintain.
 
-## Getting started
+## Install
 
-Requires Java 21. SynthForge is not published to a remote Maven
-repository yet (see the M4 gate in the spec), so install it locally
-first:
+SynthForge isn't on Maven Central yet (see the M4 gate in
+[synthforge-v1-spec.md](synthforge-v1-spec.md)), so for now it's installed
+from source into your **local** Maven repository — the same `~/.m2` cache
+Maven and Gradle read from for every project on your machine. One-time
+setup:
 
-    git clone https://github.com/ThembaTman0/synthforge.git
-    cd synthforge
-    mvn install
+```bash
+git clone https://github.com/ThembaTman0/synthforge.git
+cd synthforge
+mvn install
+```
 
-Then, in your Spring Boot app:
+That builds `synthforge-core` and `synthforge-spring` and installs them
+locally. Now, **in your own Spring Boot project** — a separate project,
+not this cloned folder — add the dependency:
 
-1. Add the dependency:
+**Maven**
 
-   ```xml
-   <dependency>
-       <groupId>io.github.ThembaTman0</groupId>
-       <artifactId>synthforge-spring</artifactId>
-       <version>0.1.0-SNAPSHOT</version>
-   </dependency>
-   ```
+```xml
+<dependency>
+    <groupId>io.github.ThembaTman0</groupId>
+    <artifactId>synthforge-spring</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
 
-2. Annotate the JPA entities you want fake rows for:
+**Gradle**
 
-   ```java
-   @Entity
-   @Seed(count = 50)
-   public class Counterparty { ... }
-   ```
+```groovy
+implementation 'io.github.ThembaTman0:synthforge-spring:0.1.0-SNAPSHOT'
+```
 
-3. Enable seeding for the profiles where you want it (never production),
-   plus optional generation knobs, in `application.yml`:
+Requires Java 21 and Spring Boot with Spring Data JPA.
 
-   ```yaml
-   synthforge:
-     enabled-profiles: [dev, test]
-     # optional:
-     seed: 42               # fixed -> identical data every restart
-     date-window-days: 90
-     amount-min: 1.00
-     amount-max: 10000.00
-   ```
+## Before / after
 
-4. Start the app in an enabled profile. On startup SynthForge seeds
-   every `@Seed` entity: parents before children (`@ManyToOne` /
-   owning `@OneToOne` references always point at persisted rows),
-   constraint-aware (`@NotNull`, `@Size`, `@Email`, unique columns),
-   with realistic values driven by field names (`email`, `name`,
-   `currency`, `amount`, ...). Tables that already contain rows are
-   skipped, so restarts don't duplicate data. `@OneToMany` /
-   `@ManyToMany` fields are left alone.
+Without SynthForge, seeding two related entities means a hand-wired script:
 
-## Status
+```java
+List<Counterparty> parents = new ArrayList<>();
+for (int i = 0; i < 50; i++) {
+    parents.add(counterpartyRepo.save(new Counterparty(faker.name().fullName(), faker.internet().emailAddress())));
+}
+for (int i = 0; i < 200; i++) {
+    paymentRepo.save(new Payment(parents.get(random.nextInt(parents.size())), randomAmount()));
+}
+```
 
-M1, M2, and M3 implemented.
+With SynthForge, the entities are the seed script:
 
-- M1: `EntityScanner`, `GeneratorRegistry` (spec section 7 resolution
-  rules), and `SeedRunner` in `synthforge-core`, validated by unit tests
-  and by an integration test in `synthforge-demo` that seeds
-  `Counterparty` and `Payment` on H2.
-- M2: `SeedGraph.topologicalOrder` (parents before children over owning
-  `@ManyToOne`/`@OneToOne` edges) and the `synthforge-spring`
-  autoconfiguration, which seeds all `@Seed` entities on startup when a
-  profile listed under `synthforge.enabled-profiles` is active. Validated
-  by a startup integration test in `synthforge-demo` and by running the
-  demo app with the `dev` profile.
+```java
+@Entity @Seed(count = 50)
+public class Counterparty { /* fields only */ }
 
-Post-M2 hardening (July 2026): owning `@OneToOne` children each receive a
-distinct parent (the join column is unique), the `GenerationContext`
-knobs (random seed, date window, amount range) are reachable via a
-`SeedRunner.seed` overload and via the `synthforge.*` application
-properties (`seed`, `date-window-days`, `amount-min`, `amount-max`),
-and startup seeding skips entities whose table already has rows, making
-restarts against a persistent database idempotent. A fixed
-`synthforge.seed` makes startup data reproducible; otherwise the chosen
-seed is logged. Type defaults cover String, all numeric types
-(including `BigInteger`), `BigDecimal`, `boolean`, `char`, enums,
-`UUID`, `byte[]`, and the `java.time` family (`LocalDate`,
-`LocalDateTime`, `Instant`, `OffsetDateTime`, `ZonedDateTime`,
-`LocalTime`, `Year`, `YearMonth`).
+@Entity @Seed(count = 200)
+public class Payment {
+    @ManyToOne(optional = false) private Counterparty counterparty; // wired automatically
+}
+```
 
-**M3 (September 2026)**: the `remitflow` module joined the reactor —
-`Counterparty`, `Corridor`, and `RemittanceOrder` (spec section 6 of
-`remitflow-v1-spec.md`), with Spring Data JPA repositories and startup
-seeding validated by an integration test. `RemittanceOrder` has two
-distinct owning-side `@ManyToOne` parents, SynthForge's first
-multi-parent case in a real (not demo) module, and both resolve
-correctly. RemitFlow's own M2 (REST create/read) and M3 (order
-lifecycle transitions) are separate milestones tracked in its own
-spec — both are now also done.
+Enable it for the profiles you want (never production):
 
-M4 gate not met; do not start that work (see spec section 11). M4 is
-also now scoped: only `synthforge-core` and `synthforge-spring` would
-ever publish — `remitflow` stays deploy-skipped permanently, since it
-is a domain/curriculum module, not part of the general-purpose
-library's public surface.
+```yaml
+synthforge:
+  enabled-profiles: [dev, test]
+```
 
-### Feedback-driven backlog (parked, not planned)
+Start the app in an enabled profile and both tables are populated, in the
+right order, with realistic values, on every restart.
 
-Items live here only when real consumer usage surfaced them; nothing is
-built until the need recurs or hurts:
+## How it works
 
-- Entity-aware or overridable `name` generation — the `name` heuristic
-  gives person first names, so a `Project.name` comes out as "Sheba"
-  (surfaced 2026-07-18 by the first external consumer).
-- `synthforge.locale` property — Datafaker supports 70+ locales;
-  generation is currently pinned to English.
-- Cross-field coherence — e.g. an `email` derived from the generated
-  `name` in the same row.
-- `@Embedded` value-object support.
-- Batch flush/clear in `SeedRunner` for very large `@Seed` counts.
+- **Entity scanning** — reads JPA-managed attributes through the
+  `jakarta.persistence.metamodel.Metamodel` API, never raw reflection, so
+  only real persistent fields are ever touched.
+- **Relationship ordering** — builds a dependency graph from owning-side
+  `@ManyToOne`/`@OneToOne` relationships and topologically sorts it, so
+  parent rows always exist before a child is generated to reference them.
+- **Constraint-aware generation** — `@NotNull`, `@Size`, `@Email`, and
+  field-name heuristics (`email`, `iban`, `amount`, `country`, ...) drive
+  realistic values via [Datafaker](https://www.datafaker.net/); a
+  `@Column(unique = true)` field gets a bounded retry loop instead of a
+  constraint violation.
+- **Idempotent restarts** — a table that already has rows is skipped, so
+  restarting against a persistent database never duplicates seed data.
 
-## Build
+Full technical detail — the exact resolution priority, relationship rules,
+and configuration reference — is in
+[synthforge-v1-spec.md](synthforge-v1-spec.md).
 
-    mvn clean install
+## License
 
-## RemitFlow
-
-`remitflow` is a sibling module in this same reactor, depending on
-`synthforge-spring` directly through Maven's reactor build — no
-publishing step, since everything lives in one repository. Only pull
-SynthForge out into its own separate repository if the M4 gate criteria
-in the spec are actually met.
+[MIT](LICENSE)
