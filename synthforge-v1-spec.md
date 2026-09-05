@@ -259,15 +259,13 @@ that is explicitly out of scope for V1.
 
 ## 9. Configuration Example
 
-The entities below live in the `synthforge-demo` module (section 5), so
-they're usable today without waiting for RemitFlow to exist.
+The entities below live in the `synthforge-demo` module (section 5).
 
 ```xml
 <dependency>
     <groupId>io.github.ThembaTman0</groupId>
-    <artifactId>synthforge-spring-starter</artifactId>
+    <artifactId>synthforge-spring</artifactId>
     <version>0.1.0-SNAPSHOT</version>
-    <scope>test</scope>
 </dependency>
 ```
 

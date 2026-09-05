@@ -17,11 +17,11 @@ can never touch production, and idempotent across restarts.
 - `synthforge-spring`: Spring Boot autoconfiguration and the `@Seed` annotation
 - `synthforge-demo`: a small Spring Boot app with two related entities
   (`Counterparty`, `Payment`) used to validate the above against something
-  real, since RemitFlow does not exist as a project yet
+  real
 - `remitflow`: the real second consumer — a B2B cross-border remittance
-  gateway curriculum project, its own binding spec in
-  `remitflow-v1-spec.md`. Deploy-skipped; not part of the published
-  library artifact (see the M4 gate below)
+  gateway with its own binding spec in `remitflow-v1-spec.md` and its own
+  complete M1-M3 (entities/seeding, REST API, order lifecycle). Deploy-skipped;
+  not part of the published library artifact (see the M4 gate below)
 
 ## Getting started
 
@@ -77,7 +77,7 @@ Then, in your Spring Boot app:
 
 ## Status
 
-M1 and M2 implemented.
+M1, M2, and M3 implemented.
 
 - M1: `EntityScanner`, `GeneratorRegistry` (spec section 7 resolution
   rules), and `SeedRunner` in `synthforge-core`, validated by unit tests
@@ -110,8 +110,9 @@ seed is logged. Type defaults cover String, all numeric types
 seeding validated by an integration test. `RemittanceOrder` has two
 distinct owning-side `@ManyToOne` parents, SynthForge's first
 multi-parent case in a real (not demo) module, and both resolve
-correctly. RemitFlow's own M2/M3 (REST surface, order lifecycle) are
-separate, unstarted milestones tracked in its own spec.
+correctly. RemitFlow's own M2 (REST create/read) and M3 (order
+lifecycle transitions) are separate milestones tracked in its own
+spec — both are now also done.
 
 M4 gate not met; do not start that work (see spec section 11). M4 is
 also now scoped: only `synthforge-core` and `synthforge-spring` would
