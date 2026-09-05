@@ -18,6 +18,10 @@ can never touch production, and idempotent across restarts.
 - `synthforge-demo`: a small Spring Boot app with two related entities
   (`Counterparty`, `Payment`) used to validate the above against something
   real, since RemitFlow does not exist as a project yet
+- `remitflow`: the real second consumer — a B2B cross-border remittance
+  gateway curriculum project, its own binding spec in
+  `remitflow-v1-spec.md`. Deploy-skipped; not part of the published
+  library artifact (see the M4 gate below)
 
 ## Getting started
 
@@ -100,24 +104,20 @@ seed is logged. Type defaults cover String, all numeric types
 `LocalDateTime`, `Instant`, `OffsetDateTime`, `ZonedDateTime`,
 `LocalTime`, `Year`, `YearMonth`).
 
-M3/M4 gates not met; do not start that work (see spec section 11).
+**M3 (September 2026)**: the `remitflow` module joined the reactor —
+`Counterparty`, `Corridor`, and `RemittanceOrder` (spec section 6 of
+`remitflow-v1-spec.md`), with Spring Data JPA repositories and startup
+seeding validated by an integration test. `RemittanceOrder` has two
+distinct owning-side `@ManyToOne` parents, SynthForge's first
+multi-parent case in a real (not demo) module, and both resolve
+correctly. RemitFlow's own M2/M3 (REST surface, order lifecycle) are
+separate, unstarted milestones tracked in its own spec.
 
-### M3 gate criteria (measurable)
-
-The spec (section 11) gates M3 on M1/M2 having "genuinely proven useful"
-and RemitFlow existing. Concretely, all of the following must be true
-before adding the `remitflow/` module:
-
-1. RemitFlow exists in this reactor with at least two entities related
-   through an owning-side `@ManyToOne` or `@OneToOne`.
-2. RemitFlow needs seed data in its dev or test profile that would
-   otherwise require hand-written SQL scripts or fixture builders —
-   i.e. there is a concrete first use case, not a hypothetical one.
-3. The demo module's startup seeding and integration tests have been
-   running green in CI (including repeated runs with no
-   unique-constraint violations), demonstrating M1/M2 work day-to-day.
-
-If any of these is false, M3 stays closed.
+M4 gate not met; do not start that work (see spec section 11). M4 is
+also now scoped: only `synthforge-core` and `synthforge-spring` would
+ever publish — `remitflow` stays deploy-skipped permanently, since it
+is a domain/curriculum module, not part of the general-purpose
+library's public surface.
 
 ### Feedback-driven backlog (parked, not planned)
 
@@ -138,10 +138,10 @@ built until the need recurs or hurts:
 
     mvn clean install
 
-## When RemitFlow starts
+## RemitFlow
 
-Add it as a sibling module in this same reactor (`remitflow/`), depending on
-`synthforge-spring` directly through Maven's reactor build. No publishing
-step is needed while everything lives in one repository. Only pull
-SynthForge out into its own separate repository if the M3/M4 gate criteria
+`remitflow` is a sibling module in this same reactor, depending on
+`synthforge-spring` directly through Maven's reactor build — no
+publishing step, since everything lives in one repository. Only pull
+SynthForge out into its own separate repository if the M4 gate criteria
 in the spec are actually met.

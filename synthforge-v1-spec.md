@@ -364,7 +364,11 @@ publishing it to a personal or public Maven repository so it can be a
 dependency without living in the same reactor. Naming, branding, a public
 website, a CLI, or an "enterprise edition" are still not part of this
 specification and should not be discussed until M4 has shipped and is in
-use somewhere beyond these two projects.
+use somewhere beyond these two projects. Publishing is scoped to
+`synthforge-core` and `synthforge-spring` only: `remitflow` (once it
+exists) stays deploy-skipped even after M4 (decided 2026-07-18) — it is
+a domain/curriculum module, not part of the general-purpose library's
+public surface.
 
 ## 12. Explicit Non-Goals (for now, not forever)
 

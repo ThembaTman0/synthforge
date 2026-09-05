@@ -1,0 +1,19 @@
+remitflow:
+  max-order-amount: 50000.00
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:remitflow
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+synthforge:
+  enabled-profiles:
+    - dev
+    - test
+  seed: 42
+  amount-min: 10.00
+  amount-max: 50000.00

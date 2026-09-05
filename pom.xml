@@ -18,6 +18,7 @@
     <module>synthforge-core</module>
     <module>synthforge-spring</module>
     <module>synthforge-demo</module>
+    <module>remitflow</module>
   </modules>
 
   <properties>
