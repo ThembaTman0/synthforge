@@ -359,7 +359,19 @@ repository.
 **M4 gate** (further out, only if genuinely warranted): if SynthForge
 proves useful across RemitFlow and some other, unrelated project, consider
 publishing it to a personal or public Maven repository so it can be a
-dependency without living in the same reactor. Naming, branding, a public
+dependency without living in the same reactor.
+
+Gate condition status (as of 2026-09-05): **met, not yet acted on**. A
+separate project, `taskmanager` (github.com/ThembaTman0/TaskManager,
+commit `6a0334d`), now depends on
+`io.github.ThembaTman0:synthforge-spring:0.1.0-SNAPSHOT` via the local
+Maven repository, with `@Seed(count = 50)` on its `Task` entity, and
+seeding was confirmed working live via that project's own REST API.
+This satisfies the "some other, unrelated project" condition above.
+Meeting the condition is not itself a decision to publish - that
+remains open and undecided.
+
+Naming, branding, a public
 website, a CLI, or an "enterprise edition" are still not part of this
 specification and should not be discussed until M4 has shipped and is in
 use somewhere beyond these two projects. Publishing is scoped to
