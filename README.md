@@ -43,7 +43,7 @@ not this cloned folder - add the dependency:
 
 ```xml
 <dependency>
-    <groupId>io.github.ThembaTman0</groupId>
+    <groupId>io.github.thembatman0</groupId>
     <artifactId>synthforge-spring</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>
@@ -52,7 +52,7 @@ not this cloned folder - add the dependency:
 **Gradle**
 
 ```groovy
-implementation 'io.github.ThembaTman0:synthforge-spring:0.1.0-SNAPSHOT'
+implementation 'io.github.thembatman0:synthforge-spring:0.1.0-SNAPSHOT'
 ```
 
 Requires Java 21 and Spring Boot with Spring Data JPA.

@@ -5,9 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.github.ThembaTman0</groupId>
+    <groupId>io.github.thembatman0</groupId>
     <artifactId>synthforge-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
 
   <artifactId>synthforge-core</artifactId>
@@ -16,6 +16,18 @@
   <name>SynthForge Core</name>
   <description>Entity scanning, generator resolution, seed graph, and seed
     runner for SynthForge. No Spring dependency.</description>
+
+  <!-- Explicit override: without this, flatten-maven-plugin derives a
+       per-module url/scm by appending the artifactId as a path segment
+       onto the parent's value (a convention for multi-repo layouts, not
+       this single-repo one), producing broken URLs. -->
+  <url>https://github.com/ThembaTman0/synthforge</url>
+  <scm>
+    <connection>scm:git:https://github.com/ThembaTman0/synthforge.git</connection>
+    <developerConnection>scm:git:git@github.com:ThembaTman0/synthforge.git</developerConnection>
+    <url>https://github.com/ThembaTman0/synthforge</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <!-- Entity scanner, generator registry, seed graph, seed runner.
        See synthforge-v1-spec.md section 6. No Spring dependency here on
@@ -46,4 +58,32 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <!-- M4 dry-run: activates the source/javadoc/gpg/publish plugins defined
+       in the parent pom's pluginManagement. synthforge-demo and remitflow
+       never carry this block. -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

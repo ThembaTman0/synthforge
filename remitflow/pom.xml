@@ -5,9 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.github.ThembaTman0</groupId>
+    <groupId>io.github.thembatman0</groupId>
     <artifactId>synthforge-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
 
   <artifactId>remitflow</artifactId>
@@ -26,7 +26,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.github.ThembaTman0</groupId>
+      <groupId>io.github.thembatman0</groupId>
       <artifactId>synthforge-spring</artifactId>
       <version>${project.version}</version>
     </dependency>

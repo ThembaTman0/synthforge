@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.github.ThembaTman0</groupId>
+  <groupId>io.github.thembatman0</groupId>
   <artifactId>synthforge-parent</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
 
   <name>SynthForge</name>
@@ -79,4 +79,115 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <!-- M4 dry-run (branch m4-dry-run, not merged): publishing plugins are
+       defined here but not activated for every module - only
+       synthforge-core/pom.xml and synthforge-spring/pom.xml carry a bare
+       <plugin> entry pulling this config in. synthforge-demo and remitflow
+       never activate these and stay maven.deploy.skip=true. -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.1</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.11.2</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.7</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.11.0</version>
+          <extensions>true</extensions>
+          <configuration>
+            <!-- Matches the <server><id>central</id>...</server> you set up
+                 yourself in ~/.m2/settings.xml with your Central Portal
+                 token. Never configured here - this repo never sees it. -->
+            <publishingServerId>central</publishingServerId>
+            <!-- Explicit even though it's this plugin's own default:
+                 mvn deploy uploads and validates but never auto-releases.
+                 Actually publishing to Maven Central requires a separate,
+                 deliberate click in the Central Portal UI. Do not change
+                 this value without an explicit decision to do so. -->
+            <publishingType>USER_MANAGED</publishingType>
+          </configuration>
+        </plugin>
+        <plugin>
+          <!-- Dry-run finding: Central validates each module's raw,
+               unresolved pom.xml, not Maven's inherited "effective POM" -
+               so url/licenses/developers/scm (only ever declared here in
+               the parent) and dependency versions (only ever supplied via
+               the imported Spring Boot BOM or ${project.version}) read as
+               "missing" to Central even though they're correct at build
+               time. This plugin generates a self-contained pom with all
+               of that resolved to literal values, and Maven deploys that
+               one instead of the raw source pom.xml. -->
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.7.3</version>
+          <configuration>
+            <!-- Keeps exactly the optional elements Central's validator
+                 wants (url, licenses, developers, scm, name, description)
+                 while dropping repository declarations Central doesn't
+                 want to see in a deployed pom. Resolution of parent
+                 inheritance and dependencyManagement-supplied versions
+                 happens regardless of mode; this only controls what
+                 survives, not whether resolution happens. -->
+            <flattenMode>oss</flattenMode>
+            <updatePomFile>true</updatePomFile>
+          </configuration>
+          <executions>
+            <execution>
+              <id>flatten</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>flatten</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>flatten-clean</id>
+              <phase>clean</phase>
+              <goals>
+                <goal>clean</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>
