@@ -4,3 +4,8 @@ target/
 *.iml
 .vscode/
 .DS_Store
+
+# GPG signing key material must never enter this repo (M4 dry-run, 2026-09-07)
+*.asc
+*.rev
+*.gpg
