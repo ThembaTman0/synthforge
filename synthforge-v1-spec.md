@@ -356,18 +356,23 @@ add `remitflow/` as a new sibling module in this same reactor, with its own
 an extraction or a publish step, since SynthForge already lives in its own
 repository.
 
-**M4 gate** (further out, only if genuinely warranted): if SynthForge
-proves useful across RemitFlow and some other, unrelated project, consider
-publishing it to a personal or public Maven repository so it can be a
-dependency without living in the same reactor.
+**M4 gate**: publishing to a personal or public Maven repository was
+gated on SynthForge proving useful across RemitFlow and some other,
+unrelated project, so it could be a dependency without living in the
+same reactor.
+
+The gate was satisfied 2026-09-05: a separate project, `taskmanager`
+(github.com/ThembaTman0/TaskManager, commit `6a0334d`), depends on
+SynthForge with `@Seed(count = 50)` on its `Task` entity, confirmed
+working live via that project's own REST API - the "some other,
+unrelated project" condition.
 
 **M4 shipped 2026-09-07.** `synthforge-core` and `synthforge-spring`
 0.1.0 are published on Maven Central under `io.github.thembatman0`
-(the namespace Central actually verified - see the note on M4's
-in-progress dry-run history below for why this differs from the
-groupId used before that point). `remitflow` and `synthforge-demo`
-remain unpublished (`maven.deploy.skip=true`), as scoped from the
-start.
+(the namespace Central actually verified - see the note below for why
+this differs from the groupId used before that point). `remitflow` and
+`synthforge-demo` remain unpublished (`maven.deploy.skip=true`), as
+scoped from the start.
 
 Context on how this happened: a deliberate dry-run was underway to
 validate a publish bundle against Central's real checks (namespace
@@ -383,12 +388,6 @@ Central Portal UI. Central publishes are immutable, so 0.1.0
 is live rather than staying a dry-run artifact. The fixes were
 genuinely necessary regardless of when publishing happened, so nothing
 here was wasted work.
-
-Before this, gate condition status (met since 2026-09-05): a separate
-project, `taskmanager` (github.com/ThembaTman0/TaskManager, commit
-`6a0334d`), depends on SynthForge with `@Seed(count = 50)` on its
-`Task` entity, confirmed working live via that project's own REST
-API - the "some other, unrelated project" condition this gate named.
 
 Naming, branding, a public
 website, a CLI, or an "enterprise edition" are still not part of this
