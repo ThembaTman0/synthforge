@@ -6,7 +6,7 @@
 
   <groupId>io.github.ThembaTman0</groupId>
   <artifactId>synthforge-parent</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
 
   <name>SynthForge</name>
@@ -79,4 +79,74 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <!-- M4 dry-run (branch m4-dry-run, not merged): publishing plugins are
+       defined here but not activated for every module - only
+       synthforge-core/pom.xml and synthforge-spring/pom.xml carry a bare
+       <plugin> entry pulling this config in. synthforge-demo and remitflow
+       never activate these and stay maven.deploy.skip=true. -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.1</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.11.2</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.7</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.11.0</version>
+          <extensions>true</extensions>
+          <configuration>
+            <!-- Matches the <server><id>central</id>...</server> you set up
+                 yourself in ~/.m2/settings.xml with your Central Portal
+                 token. Never configured here - this repo never sees it. -->
+            <publishingServerId>central</publishingServerId>
+            <!-- Explicit even though it's this plugin's own default:
+                 mvn deploy uploads and validates but never auto-releases.
+                 Actually publishing to Maven Central requires a separate,
+                 deliberate click in the Central Portal UI. Do not change
+                 this value without an explicit decision to do so. -->
+            <publishingType>USER_MANAGED</publishingType>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>
