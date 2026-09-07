@@ -23,21 +23,8 @@ graph with a single annotation, so there's no script to write or maintain.
 
 ## Install
 
-SynthForge isn't on Maven Central yet (see the M4 gate in
-[synthforge-v1-spec.md](synthforge-v1-spec.md)), so for now it's installed
-from source into your **local** Maven repository - the same `~/.m2` cache
-Maven and Gradle read from for every project on your machine. One-time
-setup:
-
-```bash
-git clone https://github.com/ThembaTman0/synthforge.git
-cd synthforge
-mvn install
-```
-
-That builds `synthforge-core` and `synthforge-spring` and installs them
-locally. Now, **in your own Spring Boot project** - a separate project,
-not this cloned folder - add the dependency:
+SynthForge is on Maven Central. Add the dependency to your own Spring
+Boot project:
 
 **Maven**
 
@@ -45,17 +32,29 @@ not this cloned folder - add the dependency:
 <dependency>
     <groupId>io.github.thembatman0</groupId>
     <artifactId>synthforge-spring</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
 **Gradle**
 
 ```groovy
-implementation 'io.github.thembatman0:synthforge-spring:0.1.0-SNAPSHOT'
+implementation 'io.github.thembatman0:synthforge-spring:0.1.0'
 ```
 
-Requires Java 21 and Spring Boot with Spring Data JPA.
+Requires Java 21 and Spring Boot with Spring Data JPA. This is a very
+fresh first release - if the dependency doesn't resolve immediately,
+Central's mirrors can take a little while to fully sync after a new
+version goes live; wait a few minutes and retry.
+
+Building from source (for contributing to SynthForge itself, not
+needed just to use it):
+
+```bash
+git clone https://github.com/ThembaTman0/synthforge.git
+cd synthforge
+mvn install
+```
 
 ## Before / after
 

@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 SynthForge: a JPA-aware fake data seeding library for Spring Boot. **`synthforge-v1-spec.md` is the complete, binding spec for V1** - read it before implementing anything. Its rules for this codebase:
 
 - Do not add features, modules, classes, or annotations not named in the spec. If a gap appears, stop and describe it rather than designing around it.
-- Milestones M1, M2, and M3 are implemented. M4's gate condition (proven useful across RemitFlow and a second, unrelated project) is now met - as of 2026-09-05, a separate project (`taskmanager`) depends on `synthforge-spring` with `@Seed` confirmed working live - but publishing itself has not been decided or started. Do not start M4 work without an explicit go-ahead.
+- Milestones M1, M2, M3, and M4 are all done. `synthforge-core` and `synthforge-spring` 0.1.0 are published on Maven Central under `io.github.thembatman0` (see spec §11 for the groupId-casing history and the flatten-maven-plugin fix that publish needed). Publishing to Central is a one-way door: every future release needs a real version bump, a clean build, and the same signed-and-validated deploy path - there is no "just fix it in place."
 - Out of scope for V1: `@OneToMany`/`@ManyToMany` seeding, composite keys, CLI, REST/GraphQL, AI generation, domain provider packages. Skip such fields; don't build support.
 - Use Datafaker for realistic values, not hand-rolled random logic.
 
