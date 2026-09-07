@@ -9,3 +9,6 @@ target/
 *.asc
 *.rev
 *.gpg
+
+# flatten-maven-plugin's generated output (M4 dry-run)
+.flattened-pom.xml

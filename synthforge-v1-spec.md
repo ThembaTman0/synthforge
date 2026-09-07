@@ -263,7 +263,7 @@ The entities below live in the `synthforge-demo` module (section 5).
 
 ```xml
 <dependency>
-    <groupId>io.github.ThembaTman0</groupId>
+    <groupId>io.github.thembatman0</groupId>
     <artifactId>synthforge-spring</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 </dependency>
@@ -364,7 +364,7 @@ dependency without living in the same reactor.
 Gate condition status (as of 2026-09-05): **met, not yet acted on**. A
 separate project, `taskmanager` (github.com/ThembaTman0/TaskManager,
 commit `6a0334d`), now depends on
-`io.github.ThembaTman0:synthforge-spring:0.1.0-SNAPSHOT` via the local
+`io.github.thembatman0:synthforge-spring:0.1.0-SNAPSHOT` via the local
 Maven repository, with `@Seed(count = 50)` on its `Task` entity, and
 seeding was confirmed working live via that project's own REST API.
 This satisfies the "some other, unrelated project" condition above.

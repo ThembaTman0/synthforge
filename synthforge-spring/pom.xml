@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.github.ThembaTman0</groupId>
+    <groupId>io.github.thembatman0</groupId>
     <artifactId>synthforge-parent</artifactId>
     <version>0.1.0</version>
   </parent>
@@ -17,12 +17,24 @@
   <description>Spring Boot autoconfiguration and the @Seed annotation for
     SynthForge.</description>
 
+  <!-- Explicit override: without this, flatten-maven-plugin derives a
+       per-module url/scm by appending the artifactId as a path segment
+       onto the parent's value (a convention for multi-repo layouts, not
+       this single-repo one), producing broken URLs. -->
+  <url>https://github.com/ThembaTman0/synthforge</url>
+  <scm>
+    <connection>scm:git:https://github.com/ThembaTman0/synthforge.git</connection>
+    <developerConnection>scm:git:git@github.com:ThembaTman0/synthforge.git</developerConnection>
+    <url>https://github.com/ThembaTman0/synthforge</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <!-- @Seed annotation + Spring Boot autoconfiguration.
        See synthforge-v1-spec.md sections 6 and 9. -->
 
   <dependencies>
     <dependency>
-      <groupId>io.github.ThembaTman0</groupId>
+      <groupId>io.github.thembatman0</groupId>
       <artifactId>synthforge-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -57,6 +69,10 @@
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
