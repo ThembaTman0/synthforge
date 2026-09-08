@@ -411,6 +411,38 @@ public surface.
 
 These may be worth revisiting after M4. They are not part of V1.
 
+## Paid-tier candidates (post-traction, not scoped, not committed)
+
+Ideas worth deliberate consideration later, if (once) SynthForge sees
+real adoption beyond its current consumers - not scoped for V1, not
+gated to any milestone, and not a commitment to build any of them.
+Recording them here so they don't get lost or re-invented, and so a
+future "paid tier" conversation starts from a list instead of a blank
+page.
+
+1. **Checksum/format-valid identifiers.** Current field-name heuristics
+   (`iban`, etc.) likely produce format-*shaped* strings, not
+   verified-*valid* ones - e.g. a real mod-97 IBAN checksum, Luhn-valid
+   card numbers, correct national ID check digits. A paid tier could
+   guarantee correctness, not just plausibility.
+2. **Generalized cross-field business-rule coherence** (ties to the
+   parked cross-field-coherence backlog item): amounts reconciling
+   against line items, status fields respecting real state-machine
+   transitions, date fields ordering correctly relative to each other
+   on the same entity.
+3. **Locale packs** (ties to the parked `synthforge.locale` backlog
+   item): region-specific realistic data sold or built as add-on packs
+   rather than a single free default.
+4. **ISO 20022 / pacs.008-style message generation**: code-list-aware
+   field generation plus eventual XML serialization against the ISO
+   20022 XSD, for CBPR+/SWIFT-adjacent testing use cases.
+
+Note: items 1 and 4 touch categories section 12 currently names as
+explicit non-goals (country-/banking-specific provider packages,
+ISO20022 specifically). Recording them here as candidate ideas doesn't
+reopen that scoping decision on its own - building any of them would
+still need section 12 revisited deliberately first.
+
 ## 13. Notes for the implementing model
 
 - Implement M1, then M2, in that order. Do not start M3 or M4 work.
