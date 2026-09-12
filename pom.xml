@@ -158,7 +158,7 @@
                one instead of the raw source pom.xml. -->
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.7.3</version>
+          <version>1.8.0</version>
           <configuration>
             <!-- Keeps exactly the optional elements Central's validator
                  wants (url, licenses, developers, scm, name, description)
