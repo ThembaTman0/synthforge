@@ -42,19 +42,48 @@ Boot project:
 implementation 'io.github.thembatman0:synthforge-spring:0.1.0'
 ```
 
-Requires Java 21 and Spring Boot with Spring Data JPA. This is a very
-fresh first release - if the dependency doesn't resolve immediately,
-Central's mirrors can take a little while to fully sync after a new
-version goes live; wait a few minutes and retry.
+Requires Java 21 and Spring Boot with Spring Data JPA. The test suite
+passes on Spring Boot 4.1 (what CI runs) and on Spring Boot 3.5.16
+(checked by hand, not yet in CI). Spring Boot 3.5 apps still need to run
+on Java 21 or newer, because the library is compiled for Java 21.
 
-Building from source (for contributing to SynthForge itself, not
-needed just to use it):
+## Try it in two minutes
+
+The repo includes a small demo app (`Counterparty` and `Payment` on an
+in-memory H2 database). From a fresh clone:
 
 ```bash
 git clone https://github.com/ThembaTman0/synthforge.git
 cd synthforge
-mvn install
+mvn -pl synthforge-demo -am install -DskipTests
+mvn -pl synthforge-demo spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+Along with the SQL it logs (`show-sql` is on), you should see:
+
+```
+SynthforgeAutoConfiguration : Seeding with random seed 1593487635758507864 (set synthforge.seed to this value to reproduce the run)
+SynthforgeAutoConfiguration : Seeded 50 Counterparty rows
+SynthforgeAutoConfiguration : Seeded 200 Payment rows
+```
+
+The seed value will differ on each run. Set `synthforge.seed` to a fixed
+number to get identical data every time. The demo has no web layer, so it
+seeds, logs and exits. To see seeding work in your own app, annotate an
+entity as shown under "Before / after" below.
+
+## When it is not the right tool
+
+- You want a fresh object graph inside a single test method. That is
+  what Instancio is for.
+- You need data in production. Seeding is for dev and test profiles
+  only, and is off unless you list a profile under
+  `synthforge.enabled-profiles`.
+- Your model depends on `@OneToMany`/`@ManyToMany` collections or
+  composite keys. Those fields are skipped in this release.
+
+Building from source (for contributing to SynthForge itself, not
+needed just to use it): `mvn install`.
 
 ## Before / after
 
