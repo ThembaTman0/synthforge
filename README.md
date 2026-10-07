@@ -43,8 +43,8 @@ implementation 'io.github.thembatman0:synthforge-spring:0.1.0'
 ```
 
 Requires Java 21 and Spring Boot with Spring Data JPA. The test suite
-passes on Spring Boot 4.1 (what CI runs) and on Spring Boot 3.5.16
-(checked by hand, not yet in CI). Spring Boot 3.5 apps still need to run
+passes in CI on both Spring Boot 4.1 and Spring Boot 3.5.16. Spring Boot
+3.5 apps still need to run
 on Java 21 or newer, because the library is compiled for Java 21.
 
 ## Try it in two minutes
