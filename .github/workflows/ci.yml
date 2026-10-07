@@ -25,3 +25,23 @@ jobs:
 
       - name: Build and test
         run: mvn --batch-mode clean install
+
+  # Compatibility check: the library modules must also work on Spring Boot 3.5.
+  # remitflow uses Boot 4-only test artifacts, so it is dropped from the
+  # reactor here (it is never published).
+  boot-3-5:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Drop remitflow from the reactor
+        run: sed -i '/<module>remitflow<\/module>/d' pom.xml
+
+      - name: Test on Spring Boot 3.5
+        run: mvn --batch-mode -Dspring-boot.version=3.5.16 clean test
