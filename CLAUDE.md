@@ -11,7 +11,7 @@ SynthForge: a JPA-aware fake data seeding library for Spring Boot. **`synthforge
 - Out of scope for V1: `@OneToMany`/`@ManyToMany` seeding, composite keys, CLI, REST/GraphQL, AI generation, domain provider packages. Skip such fields; don't build support.
 - Use Datafaker for realistic values, not hand-rolled random logic.
 
-Current status: M1 and M2 are implemented and tested. Startup seeding runs when a profile listed under `synthforge.enabled-profiles` is active; `SeedGraph` orders parents before children, and entities whose table already has rows are skipped (idempotent restarts). When invoking `SeedRunner` manually, seed parents first (`SeedRunner` throws `IllegalStateException` otherwise); owning `@OneToOne` children each consume a distinct parent, so the parent count must cover the child count. Note: the whole `synthforge.*` namespace (enabled-profiles plus the generation knobs `seed`, `date-window-days`, `amount-min`, `amount-max`) is bound at runtime with `Binder` into `SynthforgeProperties`, not `@ConditionalOnProperty` - the latter cannot match YAML list syntax. A fixed `synthforge.seed` reproduces identical startup data; when omitted, the chosen seed is logged.
+Current status: V1 is complete and published (M1-M4 done, 0.1.0 on Maven Central); the work now is adoption and feedback, not new features. CI tests the library on both Spring Boot 4.1 and 3.5. Startup seeding runs when a profile listed under `synthforge.enabled-profiles` is active; `SeedGraph` orders parents before children, and entities whose table already has rows are skipped (idempotent restarts). When invoking `SeedRunner` manually, seed parents first (`SeedRunner` throws `IllegalStateException` otherwise); owning `@OneToOne` children each consume a distinct parent, so the parent count must cover the child count. Note: the whole `synthforge.*` namespace (enabled-profiles plus the generation knobs `seed`, `date-window-days`, `amount-min`, `amount-max`) is bound at runtime with `Binder` into `SynthforgeProperties`, not `@ConditionalOnProperty` - the latter cannot match YAML list syntax. A fixed `synthforge.seed` reproduces identical startup data; when omitted, the chosen seed is logged.
 
 Two other root documents govern related, non-code work: `remitflow-v1-spec.md` is the binding spec for the `remitflow` module - its own M1 (entities/seeding), M2 (REST create/read), and M3 (order lifecycle transitions) are all done; these are separate milestones from SynthForge's own M1-M4 above. `REBUILD-GUIDE.md` is a learning curriculum for reimplementing this library from scratch and is not part of the shipped library or referenced by any build/test command.
 
@@ -25,6 +25,8 @@ mvn -pl synthforge-core test                           # tests for one module
 mvn -pl synthforge-core test -Dtest=GeneratorRegistryTest   # single test class
 mvn -pl synthforge-demo spring-boot:run                # run the demo app (H2 in-memory)
 ```
+
+CI (`.github/workflows/ci.yml`) has two jobs: `build` (full reactor on Boot 4.1) and `boot-3-5` (core, spring, demo on Boot 3.5.16 via `-Dspring-boot.version=3.5.16`, with the `remitflow` module removed from the reactor because it uses Boot 4-only test artifacts). The 3.5 version is pinned in the workflow, so Dependabot will not bump it. The git remote for this repo is named `synthforge`, not `origin`.
 
 ## Architecture
 
