@@ -79,6 +79,9 @@ entity as shown under "Before / after" below.
 - You need data in production. Seeding is for dev and test profiles
   only, and is off unless you list a profile under
   `synthforge.enabled-profiles`.
+- You need to load very large volumes. Seeding is meant for dev and test
+  data sizes and goes through JPA's `EntityManager`; it has not been
+  designed or measured for bulk loads.
 - Your model depends on `@OneToMany`/`@ManyToMany` collections or
   composite keys. Those fields are skipped in this release.
 
